@@ -1160,6 +1160,7 @@ function renderLocker() {
   var input = document.getElementById('locker-input');
   if (!input) return;
   input.focus();
+  window.__lockerScan = handleScan;
   document.getElementById('content').addEventListener('click', function (e) {
     if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') input.focus();
   });
@@ -1724,6 +1725,18 @@ function boot() {
     var initialView = urlParams.get('view') || 'dashboard';
     var initialParams = {};
     urlParams.forEach(function (v, k) { initialParams[k] = v; });
+
+    // A key whose NDEF link points at this page lands here as #<otp>
+    // (a phone tap). Use it as a locker scan, then clean the address bar.
+    var tapped = (window.location.hash || '').replace(/^#/, '');
+    if (looksLikeOtpPrefix(tapped)) {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+      window.__lockerScan = null;
+      navigate('locker');
+      if (window.__lockerScan) window.__lockerScan(tapped.slice(0, 12).toLowerCase());
+      else toast('Only an Admin can check keys in and out.', 'error');
+      return;
+    }
 
     navigate(initialView, initialParams);
   });
