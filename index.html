@@ -505,17 +505,27 @@ function looksLikeOtpPrefix(value) {
 }
 function attachOtpScan(inputEl, onDetected, opts) {
   opts = opts || {};
-  var handled = false;
+  var handled = false, quiet = null;
+  // The key keeps typing (the rest of the OTP plus Enter) after the first
+  // 12 characters, so the field is only reset once the typing has stopped.
+  function settle() {
+    clearTimeout(quiet);
+    quiet = setTimeout(function () {
+      inputEl.value = opts.capture ? inputEl.value.slice(0, 12).toLowerCase() : '';
+      handled = false;
+    }, 250);
+  }
   inputEl.addEventListener('input', function () {
-    if (handled) return;
+    if (handled) { settle(); return; }
     var val = inputEl.value.trim();
     if (looksLikeOtpPrefix(val)) {
       handled = true;
-      var prefix = val.slice(0, 12).toLowerCase();
-      inputEl.value = opts.capture ? prefix : '';
-      onDetected(prefix);
-      setTimeout(function () { handled = false; }, 600);
+      onDetected(val.slice(0, 12).toLowerCase());
+      settle();
     }
+  });
+  inputEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && handled) { e.preventDefault(); settle(); }
   });
 }
 
