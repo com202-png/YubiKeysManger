@@ -6,7 +6,170 @@
   <title>YubiKey Manager</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext y='20' font-size='20'%3E%F0%9F%94%91%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
-  <link rel="stylesheet" href="css/styles.css">
+  <style>
+:root{
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: "SF Mono", "Roboto Mono", Consolas, monospace;
+    --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
+    --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
+
+    --bg-page: #F6F6FB; --bg-surface: #FFFFFF; --bg-surface-2: #FAFAFD; --bg-sunken: #F0EFF8;
+    --border: #E7E6F2; --border-strong: #D6D3E8;
+    --text-primary: #16141F; --text-secondary: #5A5868; --text-muted: #928FA3;
+
+    --accent: #7B2FF7; --accent-strong: #5E1FD1; --accent-bg: #F1E9FE; --accent-text: #5A1CC4;
+    --brand-purple: #7B2FF7; --brand-blue: #2A6FF2; --brand-pink: #E0296B; --brand-navy: #0B0A12;
+    --brand-gradient: linear-gradient(90deg, #7B2FF7 0%, #C42BA0 50%, #F2545B 100%);
+
+    --success: #1FA971; --success-bg: #E3F8EE; --success-text: #0E7A4D;
+    --warning: #C77F0A; --warning-bg: #FCF0DA; --warning-text: #7C4F04;
+    --danger: #E23B5F; --danger-bg: #FCE9EF; --danger-text: #A3103A;
+    --neutral: #5A5868; --neutral-bg: #F0EFF8; --neutral-text: #423F52;
+
+    --shadow-card: 0 1px 2px rgba(22,20,31,.05), 0 1px 1px rgba(22,20,31,.04);
+    --shadow-pop: 0 12px 32px rgba(22,20,31,.16), 0 2px 8px rgba(22,20,31,.08);
+  }
+  [data-theme="dark"]{
+    --bg-page: #121018; --bg-surface: #1A1824; --bg-surface-2: #201D2C; --bg-sunken: #0E0C15;
+    --border: #2C2839; --border-strong: #3C374C;
+    --text-primary: #F1EFF7; --text-secondary: #ADA9C0; --text-muted: #726D89;
+    --accent: #A472FF; --accent-strong: #BB93FF; --accent-bg: #2C1E52; --accent-text: #C6A8FF;
+    --brand-purple: #A472FF; --brand-blue: #5B93FF; --brand-pink: #F45D8B; --brand-navy: #08070D;
+    --brand-gradient: linear-gradient(90deg, #9147F0 0%, #D93FA8 50%, #F26A6A 100%);
+    --success: #4FCC93; --success-bg: #163326; --success-text: #7FE0B4;
+    --warning: #E0A83D; --warning-bg: #3A2C0F; --warning-text: #F2C271;
+    --danger: #F06B8B; --danger-bg: #3A1B27; --danger-text: #F5A0B8;
+    --neutral: #ADA9C0; --neutral-bg: #262234; --neutral-text: #D4D1E0;
+    --shadow-card: 0 1px 2px rgba(0,0,0,.4); --shadow-pop: 0 16px 40px rgba(0,0,0,.55);
+  }
+
+  *{ box-sizing: border-box; }
+  html, body{ margin:0; padding:0; height:100%; background: var(--bg-page); color: var(--text-primary); font-family: var(--font-sans); font-size: 14px; -webkit-font-smoothing: antialiased; }
+  a{ color: var(--accent); text-decoration:none; } a:hover{ text-decoration:underline; }
+  h1,h2,h3,h4{ margin:0 0 var(--sp-2); font-weight:700; letter-spacing:-.01em; }
+  h1{ font-size:22px; } h2{ font-size:18px; } h3{ font-size:15px; } h4{ font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-secondary); }
+  p{ margin:0 0 var(--sp-2); color:var(--text-secondary); }
+  code, .mono{ font-family: var(--font-mono); }
+
+  #app-shell{ display:flex; height:100vh; overflow:hidden; }
+  #sidebar{ width: 240px; flex-shrink:0; background: var(--brand-navy); display:flex; flex-direction:column; padding: 0 0 var(--sp-4); position:relative; }
+  #sidebar::before{ content:''; display:block; height:4px; width:100%; background: var(--brand-gradient); flex-shrink:0; }
+  .brand{ display:flex; align-items:center; gap:10px; padding: var(--sp-4) var(--sp-4) var(--sp-4); border-bottom:1px solid rgba(255,255,255,.08); margin-bottom: var(--sp-3); }
+  .brand-mark{ width:32px; height:32px; border-radius:9px; background: var(--brand-gradient); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; box-shadow: 0 2px 10px rgba(123,47,247,.4); }
+  .brand-name{ font-weight:700; font-size:14px; color:#fff; } .brand-sub{ font-size:11px; color:rgba(255,255,255,.5); }
+  .nav-section{ padding: var(--sp-3) var(--sp-4) var(--sp-1); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:rgba(255,255,255,.35); font-weight:700; }
+  .nav-item{ display:flex; align-items:center; gap:10px; padding: 9px var(--sp-4); margin: 1px var(--sp-2); border-radius: var(--radius-sm); color: rgba(255,255,255,.72); cursor:pointer; font-size:13.5px; font-weight:600; transition: background .12s, color .12s; }
+  .nav-item:hover{ background: rgba(255,255,255,.06); color: #fff; }
+  .nav-item.active{ background: var(--brand-gradient); color: #fff; box-shadow: 0 4px 14px rgba(123,47,247,.35); }
+  .nav-item .badge{ margin-left:auto; } .nav-icon{ width:16px; text-align:center; opacity:.9; }
+
+  #main{ flex:1; overflow-y:auto; display:flex; flex-direction:column; }
+  #topbar{ display:flex; align-items:center; gap:var(--sp-3); padding: var(--sp-3) var(--sp-5); border-bottom:1px solid var(--border); background:var(--bg-surface); position:sticky; top:0; z-index:20; }
+  #topbar .title{ font-size:16px; font-weight:700; } #topbar .spacer{ flex:1; }
+  #global-search{ width:280px; } #content{ padding: var(--sp-5); flex:1; }
+  .user-chip{ display:flex; align-items:center; gap:8px; padding:4px 10px 4px 4px; border-radius:20px; border:1px solid var(--border); cursor:pointer; }
+  .user-avatar{ width:26px; height:26px; border-radius:50%; background: var(--brand-gradient); color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+
+  .btn{ display:inline-flex; align-items:center; gap:6px; border-radius: var(--radius-sm); padding: 9px 16px; font-size:13px; font-weight:700; cursor:pointer; border:1.5px solid var(--border-strong); background: var(--bg-surface); color: var(--text-primary); transition: background .12s, border-color .12s, transform .08s; white-space:nowrap; }
+  .btn:hover{ background: var(--bg-sunken); } .btn:active{ transform: translateY(1px); } .btn:disabled{ opacity:.5; cursor:not-allowed; }
+  .btn-primary{ background: var(--text-primary); border-color: var(--text-primary); color:#fff; } .btn-primary:hover{ background:#000; border-color:#000; }
+  [data-theme="dark"] .btn-primary{ background: var(--brand-gradient); border-color: transparent; color:#fff; } [data-theme="dark"] .btn-primary:hover{ filter:brightness(1.1); }
+  .btn-danger{ background: var(--danger); border-color: var(--danger); color:#fff; } .btn-danger:hover{ filter:brightness(1.08); }
+  .btn-ghost{ background:transparent; border-color:transparent; } .btn-ghost:hover{ background: var(--bg-sunken); }
+  .btn-sm{ padding:6px 12px; font-size:12px; } .btn-icon{ padding:7px; width:32px; height:32px; justify-content:center; }
+
+  input, select, textarea{ width:100%; padding:9px 11px; border-radius: var(--radius-sm); border:1.5px solid var(--border-strong); background: var(--bg-surface); color: var(--text-primary); font-family:inherit; font-size:13px; }
+  input:focus, select:focus, textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; border-color: var(--accent); }
+  label{ display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:4px; }
+  .field{ margin-bottom: var(--sp-3); } .field-row{ display:flex; gap: var(--sp-3); } .field-row .field{ flex:1; }
+
+  .card{ background: var(--bg-surface); border:1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }
+  .card-pad{ padding: var(--sp-4) var(--sp-5); }
+  .kpi-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: var(--sp-3); margin-bottom: var(--sp-5); }
+  .kpi-card{ background: var(--bg-surface); border:1px solid var(--border); border-radius: var(--radius-md); padding: var(--sp-4); box-shadow: var(--shadow-card); }
+  .kpi-label{ display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.03em; margin-bottom:10px; }
+  .kpi-label .kpi-icon-chip{ width:22px; height:22px; border-radius:7px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; flex-shrink:0; }
+  .kpi-value{ font-size:28px; font-weight:800; letter-spacing:-.02em; } .kpi-sub{ font-size:12px; color:var(--text-secondary); margin-top:4px; }
+  .kpi-card.warn .kpi-value{ color: var(--warning); } .kpi-card.danger .kpi-value{ color: var(--danger); } .kpi-card.success .kpi-value{ color: var(--success); }
+  .kpi-grid .kpi-card:nth-child(9n+1) .kpi-icon-chip{ background: var(--brand-purple); }
+  .kpi-grid .kpi-card:nth-child(9n+2) .kpi-icon-chip{ background: var(--brand-blue); }
+  .kpi-grid .kpi-card:nth-child(9n+3) .kpi-icon-chip{ background: var(--brand-pink); }
+  .kpi-grid .kpi-card:nth-child(9n+4) .kpi-icon-chip{ background: var(--brand-blue); }
+  .kpi-grid .kpi-card:nth-child(9n+5) .kpi-icon-chip{ background: var(--brand-purple); }
+  .kpi-grid .kpi-card:nth-child(9n+6) .kpi-icon-chip{ background: var(--brand-pink); }
+  .kpi-grid .kpi-card:nth-child(9n+7) .kpi-icon-chip{ background: var(--brand-blue); }
+  .kpi-grid .kpi-card:nth-child(9n+8) .kpi-icon-chip{ background: var(--brand-pink); }
+  .kpi-grid .kpi-card:nth-child(9n+9) .kpi-icon-chip{ background: var(--brand-purple); }
+
+  .chart-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--sp-4); }
+  .chart-card{ background: var(--bg-surface); border:1px solid var(--border); border-radius: var(--radius-lg); padding: var(--sp-4); }
+  .chart-canvas-wrap{ position:relative; height:240px; width:100%; }
+  .chart-canvas-wrap canvas{ position:absolute; top:0; left:0; width:100% !important; height:100% !important; }
+  .chart-load-error{ height:240px; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:12px; text-align:center; padding:0 16px; }
+
+  .table-wrap{ background: var(--bg-surface); border:1px solid var(--border); border-radius: var(--radius-lg); overflow:hidden; box-shadow: var(--shadow-card); }
+  table.data{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.data thead th{ text-align:left; padding:10px 14px; background: var(--bg-surface-2); color:var(--text-muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid var(--border); font-weight:700; position: sticky; top:0; cursor:pointer; user-select:none; }
+  table.data thead th:hover{ color:var(--text-primary); }
+  table.data tbody td{ padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-primary); }
+  table.data tbody tr:last-child td{ border-bottom:none; } table.data tbody tr:hover{ background: var(--bg-sunken); cursor:pointer; }
+  .table-toolbar{ display:flex; gap:var(--sp-2); align-items:center; padding: var(--sp-3) var(--sp-4); border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .table-toolbar .spacer{ flex:1; }
+  .table-footer{ display:flex; align-items:center; justify-content:space-between; padding: var(--sp-3) var(--sp-4); font-size:12px; color:var(--text-muted); }
+
+  .badge{ display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:20px; font-size:11.5px; font-weight:700; letter-spacing:.01em; }
+  .badge-dot{ width:6px; height:6px; border-radius:50%; }
+  .badge-active{ background:var(--success-bg); color:var(--success-text); } .badge-active .badge-dot{ background:var(--success); }
+  .badge-resigned{ background:var(--neutral-bg); color:var(--neutral-text); } .badge-resigned .badge-dot{ background:var(--neutral); }
+  .badge-returned{ background:var(--accent-bg); color:var(--accent-text); } .badge-returned .badge-dot{ background:var(--accent); }
+  .badge-lost{ background:var(--danger-bg); color:var(--danger-text); } .badge-lost .badge-dot{ background:var(--danger); }
+  .badge-pending{ background:var(--warning-bg); color:var(--warning-text); } .badge-pending .badge-dot{ background:var(--warning); }
+  .badge-disabled{ background:var(--neutral-bg); color:var(--neutral-text); } .badge-disabled .badge-dot{ background:var(--text-muted); }
+
+  #toast-stack{ position:fixed; bottom:20px; right:20px; z-index:1000; display:flex; flex-direction:column; gap:8px; }
+  .toast{ background: var(--bg-surface); border:1px solid var(--border); border-left:4px solid var(--accent); border-radius: var(--radius-sm); padding:12px 16px; box-shadow: var(--shadow-pop); min-width:260px; font-size:13px; animation: toast-in .18s ease-out; }
+  .toast.success{ border-left-color: var(--success); } .toast.error{ border-left-color: var(--danger); } .toast.warning{ border-left-color: var(--warning); }
+  @keyframes toast-in{ from{ opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  .modal-backdrop{ position:fixed; inset:0; background: rgba(11,10,18,.55); display:flex; align-items:center; justify-content:center; z-index:500; opacity:0; pointer-events:none; transition:opacity .15s; }
+  .modal-backdrop.open{ opacity:1; pointer-events:all; }
+  .modal{ background: var(--bg-surface); border-radius: var(--radius-lg); width:520px; max-width:92vw; max-height:86vh; overflow-y:auto; box-shadow: var(--shadow-pop); transform: translateY(8px); transition: transform .15s; }
+  .modal-backdrop.open .modal{ transform: translateY(0); }
+  .modal-header{ display:flex; align-items:center; padding: var(--sp-4) var(--sp-5); border-bottom:1px solid var(--border); }
+  .modal-body{ padding: var(--sp-5); }
+  .modal-footer{ display:flex; justify-content:flex-end; gap:var(--sp-2); padding: var(--sp-4) var(--sp-5); border-top:1px solid var(--border); }
+
+  .flex{ display:flex; } .items-center{ align-items:center; } .justify-between{ justify-content:space-between; }
+  .gap-1{gap:4px;} .gap-2{gap:8px;} .gap-3{gap:12px;} .gap-4{gap:16px;}
+  .mt-2{margin-top:8px;} .mt-3{margin-top:12px;} .mt-4{margin-top:16px;} .mb-3{margin-bottom:12px;}
+  .text-muted{ color:var(--text-muted); } .text-sm{ font-size:12px; }
+  .empty-state{ text-align:center; padding: var(--sp-10) var(--sp-4); color:var(--text-muted); }
+  .empty-state i{ font-size:32px; opacity:.4; display:block; margin-bottom:10px; }
+  .spinner{ width:16px; height:16px; border:2px solid var(--border-strong); border-top-color:var(--accent); border-radius:50%; animation:spin .6s linear infinite; display:inline-block; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  #loading-overlay{ position:fixed; inset:0; background:var(--bg-page); display:flex; align-items:center; justify-content:center; z-index:2000; flex-direction:column; gap:10px; }
+  .skeleton{ background: linear-gradient(90deg, var(--bg-sunken) 25%, var(--border) 37%, var(--bg-sunken) 63%); background-size:400% 100%; animation: sk 1.4s ease infinite; border-radius:6px; }
+  @keyframes sk{ 0%{background-position:100% 50%;} 100%{background-position:0 50%;} }
+  .pill-select{ display:flex; gap:6px; flex-wrap:wrap; }
+  .pill{ padding:6px 12px; border-radius:20px; border:1.5px solid var(--border-strong); font-size:12.5px; font-weight:700; cursor:pointer; color:var(--text-secondary); }
+  .pill.active{ background: var(--brand-gradient); border-color:transparent; color:#fff; }
+  .progress-bar{ height:8px; border-radius:6px; background:var(--bg-sunken); overflow:hidden; } .progress-bar > div{ height:100%; background: var(--brand-gradient); }
+  .divider{ border-top:1px solid var(--border); margin: var(--sp-3) 0; }
+  ::-webkit-scrollbar{ width:10px; height:10px; } ::-webkit-scrollbar-thumb{ background:var(--border-strong); border-radius:6px; } ::-webkit-scrollbar-track{ background:transparent; }
+  .scan-input{ font-family: var(--font-mono); font-size:16px; text-align:center; letter-spacing:1px; }
+  .scan-hint{ display:flex; align-items:center; gap:8px; justify-content:center; color:var(--text-muted); font-size:12px; margin-top:10px; }
+  .scan-pulse{ width:10px; height:10px; border-radius:50%; background: var(--brand-purple); animation: pulse 1.4s ease infinite; }
+  @keyframes pulse{ 0%{ opacity:.4; transform:scale(.85);} 50%{ opacity:1; transform:scale(1.1);} 100%{ opacity:.4; transform:scale(.85);} }
+  @media (max-width: 900px){ #sidebar{ position:fixed; left:-240px; top:0; bottom:0; z-index:900; transition:left .2s; } #sidebar.open{ left:0; } #global-search{ display:none; } }
+
+/* sign-in screen */
+#login-view{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:var(--bg-page); z-index:2100; padding:16px; }
+#login-view .login-card{ width:100%; max-width:380px; }
+#login-view .login-error{ color:var(--danger); font-size:12.5px; min-height:18px; margin-top:8px; }
+#login-view .login-switch{ text-align:center; font-size:12.5px; margin-top:14px; color:var(--text-secondary); }
+#login-view .login-switch a{ color:var(--accent); cursor:pointer; font-weight:600; }
+
+  </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
@@ -72,8 +235,1577 @@
     <div id="toast-stack"></div>
   <div class="modal-backdrop" id="modal-backdrop"><div class="modal" id="modal-box"></div></div>
 
-  <script src="js/config.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/app.js"></script>
+  <script>
+// Public project settings (the publishable key is meant to be public —
+// access is enforced by the database functions and their role checks).
+window.APP_CONFIG = {
+  SUPABASE_URL: 'https://aweuqtiqfxjoflvvturi.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_DIHyv13-yCxgBKIC8PYCvQ_394bcWSE'
+};
+
+/* api.js — thin client for the Supabase backend.
+   Every call the UI makes goes through call(name, ...args), which maps the
+   screen-level name to a database function and its parameter names. */
+
+var sb = window.supabase.createClient(window.APP_CONFIG.SUPABASE_URL, window.APP_CONFIG.SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true }
+});
+
+var RPC = {
+  api_getSession:            ['yk_get_session', []],
+  api_getDashboardStats:     ['yk_get_dashboard_stats', []],
+  api_listKeys:              ['yk_list_keys', ['p_filters']],
+  api_getKey:                ['yk_get_key', ['p_serial']],
+  api_createKey:             ['yk_create_key', ['p_payload']],
+  api_updateKey:             ['yk_update_key', ['p_serial', 'p_payload']],
+  api_deleteKey:             ['yk_delete_key', ['p_serial']],
+  api_bulkImportKeys:        ['yk_bulk_import_keys', ['p_rows']],
+  api_assignKey:             ['yk_assign_key', ['p_serial', 'p_payload']],
+  api_adminSetKeyStatus:     ['yk_admin_set_key_status', ['p_serial', 'p_status', 'p_notes']],
+  api_markKeyReturned:       ['yk_mark_key_returned', ['p_serial', 'p_notes']],
+  api_resignHolder:          ['yk_resign_holder', ['p_ccms', 'p_payload']],
+  api_getPendingRecovery:    ['yk_get_pending_recovery', []],
+  api_findDuplicateSerials:  ['yk_find_duplicate_serials', []],
+  api_listVerticals:         ['yk_list_verticals', []],
+  api_resolveOtp:            ['yk_resolve_otp', ['p_otp']],
+  api_lockerScan:            ['yk_locker_scan', ['p_otp']],
+  api_listOutNow:            ['yk_list_out_now', []],
+  api_listMovements:         ['yk_list_movements', ['p_filters']],
+  api_forceCheckIn:          ['yk_force_check_in', ['p_id', 'p_note']],
+  api_listAuditCampaigns:    ['yk_list_audit_campaigns', []],
+  api_launchAuditCampaign:   ['yk_launch_audit_campaign', ['p_payload']],
+  api_getAuditCampaignDetail:['yk_get_audit_campaign_detail', ['p_campaign_id']],
+  api_getMyAuditQueue:       ['yk_get_my_audit_queue', ['p_campaign_id']],
+  api_submitAuditResult:     ['yk_submit_audit_result', ['p_campaign_id', 'p_ccms', 'p_result', 'p_comment']],
+  api_sendAuditReminders:    ['yk_send_audit_reminders', ['p_campaign_id']],
+  api_closeAuditCampaign:    ['yk_close_audit_campaign', ['p_campaign_id']],
+  api_getNotifications:      ['yk_get_notifications', []],
+  api_getActivityLog:        ['yk_get_activity_log', ['p_filters']],
+  api_getSettings:           ['yk_get_settings', []],
+  api_updateSettings:        ['yk_update_settings', ['p_payload']],
+  api_listUsers:             ['yk_list_users', []],
+  api_upsertUser:            ['yk_upsert_user', ['p_payload']],
+  api_removeUser:            ['yk_remove_user', ['p_email']]
+};
+
+/** Emails go out through the send-emails Edge Function. A failure there never
+ *  blocks the action that triggered it. */
+function sendEmails_(type, campaignId) {
+  return sb.functions.invoke('send-emails', { body: { type: type, campaignId: campaignId } })
+    .then(function (res) { if (res.error) throw res.error; return res.data; });
+}
+
+var AFTER_CALL = {
+  api_launchAuditCampaign: function (res) {
+    sendEmails_('audit_request', res.campaignId).catch(function () {
+      toast('Audit created, but the request emails could not be sent. Check the email function setup.', 'warning');
+    });
+  },
+  api_sendAuditReminders: function (res, args) {
+    return sendEmails_('audit_reminder', args[0]);
+  },
+  api_submitAuditResult: function (res, args) {
+    if (res && res.campaignComplete) sendEmails_('audit_complete', args[0]).catch(function () {});
+  }
+};
+
+function call(fnName) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  var def = RPC[fnName];
+  if (!def) return Promise.reject(new Error('Unknown call: ' + fnName));
+
+  var params = {};
+  def[1].forEach(function (name, i) { params[name] = args[i] === undefined ? null : args[i]; });
+
+  return sb.rpc(def[0], params).then(function (res) {
+    if (res.error) throw res.error;
+    var after = AFTER_CALL[fnName];
+    if (!after) return res.data;
+    return Promise.resolve(after(res.data, args)).then(function () { return res.data; });
+  }).catch(function (err) {
+    var msg = (err && err.message) || 'Something went wrong. Please try again.';
+    if (/JWT|expired/i.test(msg)) { showLogin_('Your session expired. Please sign in again.'); }
+    else if (fnName !== 'api_getSession') toast(msg, 'error');
+    throw err;
+  });
+}
+
+/* JsCore — router, toast/modal system, theming, small render helpers, and
+   the OTP-scan utility used by the search bar, the Scan button, and the
+   Add/Edit key forms. */
+
+var APP = { session: null, currentView: null, currentParams: {} };
+
+var VIEW_TITLES = {
+  'dashboard': 'Dashboard', 'keys': 'YubiKeys', 'pending-recovery': 'Pending Recovery', 'locker': 'Locker',
+  'audits': 'Audit Campaigns', 'audit-detail': 'Audit Campaign', 'audit': 'Complete Your Audit',
+  'reports': 'Reports', 'activity': 'Activity Log', 'settings': 'Settings', 'users': 'Users & Roles'
+};
+
+function navigate(view, params) {
+  APP.currentView = view;
+  APP.currentParams = params || {};
+  document.querySelectorAll('.nav-item').forEach(function (el) {
+    el.classList.toggle('active', el.dataset.view === view);
+  });
+  document.getElementById('page-title').textContent = VIEW_TITLES[view] || 'YubiKey Manager';
+  document.getElementById('sidebar').classList.remove('open');
+
+  var content = document.getElementById('content');
+  content.innerHTML = renderSkeleton_();
+
+  var renderers = {
+    'dashboard': renderDashboard, 'keys': renderKeys, 'pending-recovery': renderPendingRecovery, 'locker': renderLocker,
+    'audits': renderAudits, 'audit-detail': renderAuditDetail, 'audit': renderAuditFillPage,
+    'reports': renderReports, 'activity': renderActivity, 'settings': renderSettings, 'users': renderUsers
+  };
+  var renderer = renderers[view] || renderDashboard;
+  renderer(APP.currentParams);
+}
+
+function renderSkeleton_() {
+  return '<div class="kpi-grid">' +
+    Array(4).fill('<div class="skeleton" style="height:88px;border-radius:10px"></div>').join('') +
+    '</div><div class="skeleton" style="height:320px;border-radius:14px"></div>';
+}
+
+document.addEventListener('click', function (e) {
+  var navItem = e.target.closest('.nav-item');
+  if (navItem) navigate(navItem.dataset.view);
+});
+document.getElementById('mobile-menu-btn').addEventListener('click', function () {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+function toast(message, type) {
+  var stack = document.getElementById('toast-stack');
+  var el = document.createElement('div');
+  el.className = 'toast ' + (type || '');
+  el.textContent = message;
+  stack.appendChild(el);
+  setTimeout(function () {
+    el.style.transition = 'opacity .2s';
+    el.style.opacity = '0';
+    setTimeout(function () { el.remove(); }, 200);
+  }, 3800);
+}
+
+function openModal(html) {
+  document.getElementById('modal-box').innerHTML = html;
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modal-backdrop').classList.remove('open');
+  document.getElementById('modal-box').innerHTML = '';
+}
+document.getElementById('modal-backdrop').addEventListener('click', function (e) {
+  if (e.target.id === 'modal-backdrop') closeModal();
+});
+
+function confirmDialog(title, message, confirmLabel, onConfirm, danger) {
+  openModal(
+    '<div class="modal-header"><h3>' + escapeHtml(title) + '</h3></div>' +
+    '<div class="modal-body"><p>' + escapeHtml(message) + '</p></div>' +
+    '<div class="modal-footer">' +
+    '<button class="btn" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn ' + (danger ? 'btn-danger' : 'btn-primary') + '" id="confirm-btn">' + escapeHtml(confirmLabel) + '</button>' +
+    '</div>'
+  );
+  document.getElementById('confirm-btn').addEventListener('click', function () {
+    closeModal();
+    onConfirm();
+  });
+}
+
+function initTheme() {
+  var saved = localStorageSafe_get('yk_theme') || 'light';
+  document.body.setAttribute('data-theme', saved);
+  document.getElementById('theme-toggle-btn').innerHTML = saved === 'dark' ? '<i class="ti ti-sun"></i>' : '<i class="ti ti-moon"></i>';
+}
+document.getElementById('theme-toggle-btn').addEventListener('click', function () {
+  var current = document.body.getAttribute('data-theme');
+  var next = current === 'dark' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', next);
+  localStorageSafe_set('yk_theme', next);
+  this.innerHTML = next === 'dark' ? '<i class="ti ti-sun"></i>' : '<i class="ti ti-moon"></i>';
+});
+var __memStore = {};
+function localStorageSafe_get(k) { try { return localStorage.getItem(k); } catch (e) { return __memStore[k]; } }
+function localStorageSafe_set(k, v) { try { localStorage.setItem(k, v); } catch (e) { __memStore[k] = v; } }
+
+function escapeHtml(str) {
+  var div = document.createElement('div');
+  div.textContent = str == null ? '' : String(str);
+  return div.innerHTML;
+}
+
+function statusBadge(status) {
+  var map = {
+    'Assigned': 'badge-active', 'Available': 'badge-returned', 'Missing': 'badge-lost',
+    'Disabled': 'badge-disabled', 'Retired': 'badge-disabled', 'Damaged': 'badge-lost', 'In Stock': 'badge-pending'
+  };
+  var cls = map[status] || 'badge-disabled';
+  return '<span class="badge ' + cls + '"><span class="badge-dot"></span>' + escapeHtml(status) + '</span>';
+}
+
+function debounce(fn, wait) {
+  var t;
+  return function () {
+    var args = arguments, ctx = this;
+    clearTimeout(t);
+    t = setTimeout(function () { fn.apply(ctx, args); }, wait);
+  };
+}
+
+function emptyState(icon, text) {
+  return '<div class="empty-state"><i class="ti ' + icon + '"></i>' + escapeHtml(text) + '</div>';
+}
+
+// ---- OTP scan utility ----------------------------------------------------
+// A physical YubiKey, when tapped while plugged in, types a modhex string
+// via the keyboard (12-char public ID, then a longer part that changes
+// every tap) and finishes with Enter. attachOtpScan reacts the moment the
+// first 12 characters land — no need to wait for Enter — then either
+// clears the field and resolves it to a key (resolve mode, the default),
+// or leaves the 12-char prefix in the field for the person to save
+// (capture mode, used when registering a new key's OTP).
+var OTP_MODHEX = /^[cbdefghijklnrtuv]+$/i;
+function looksLikeOtpPrefix(value) {
+  return !!value && value.length >= 12 && OTP_MODHEX.test(value.slice(0, 12));
+}
+function attachOtpScan(inputEl, onDetected, opts) {
+  opts = opts || {};
+  var handled = false;
+  inputEl.addEventListener('input', function () {
+    if (handled) return;
+    var val = inputEl.value.trim();
+    if (looksLikeOtpPrefix(val)) {
+      handled = true;
+      var prefix = val.slice(0, 12).toLowerCase();
+      inputEl.value = opts.capture ? prefix : '';
+      onDetected(prefix);
+      setTimeout(function () { handled = false; }, 600);
+    }
+  });
+}
+
+function openScanModal_() {
+  openModal(
+    '<div class="modal-header"><h3>Scan a YubiKey</h3></div>' +
+    '<div class="modal-body">' +
+      '<input id="scan-input" class="scan-input" placeholder="Plug in the key and tap it now…" autocomplete="off" />' +
+      '<div class="scan-hint"><span class="scan-pulse"></span>Waiting for a tap — no need to press Enter</div>' +
+    '</div>' +
+    '<div class="modal-footer"><button class="btn" onclick="closeModal()">Cancel</button></div>'
+  );
+  var input = document.getElementById('scan-input');
+  input.focus();
+  attachOtpScan(input, function (prefix) {
+    call('api_resolveOtp', prefix).then(function (key) {
+      closeModal();
+      navigate('keys');
+      setTimeout(function () { openKeyDetail_(key.serial); }, 50);
+    }).catch(function () { input.focus(); });
+  });
+}
+document.getElementById('scan-btn').addEventListener('click', openScanModal_);
+
+document.getElementById('notif-btn').addEventListener('click', function () {
+  call('api_getNotifications').then(function (items) {
+    var html = items.length
+      ? items.map(function (n) {
+          return '<div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12.5px">' +
+            '<div style="display:flex;gap:8px;align-items:flex-start">' +
+            '<i class="ti ' + n.icon + '" style="color:var(--' + (n.type === 'danger' ? 'danger' : 'warning') + ');margin-top:2px"></i>' +
+            '<div><div style="font-weight:600">' + escapeHtml(n.message) + '</div>' +
+            '<div class="text-muted" style="margin-top:2px">' + escapeHtml(n.detail || '') + '</div></div></div></div>';
+        }).join('')
+      : '<div style="padding:20px;text-align:center" class="text-muted text-sm">No notifications. Everything looks good.</div>';
+
+    openModal(
+      '<div class="modal-header"><h3>Notifications</h3></div>' +
+      '<div style="max-height:60vh;overflow-y:auto">' + html + '</div>' +
+      '<div class="modal-footer"><button class="btn" onclick="closeModal()">Close</button></div>'
+    );
+  });
+});
+
+/* JsDashboard — overview cards + charts */
+
+var __charts = {};
+
+function renderDashboard() {
+  call('api_getDashboardStats').then(function (s) {
+    var content = document.getElementById('content');
+    content.innerHTML =
+      '<div class="kpi-grid">' +
+        kpiCard('Total Keys', s.totalKeys, 'ti-key') +
+        kpiCard('Assigned', s.assignedKeys, 'ti-user-check', 'success') +
+        kpiCard('Available', s.availableKeys, 'ti-key') +
+        kpiCard('Missing', s.missingKeys, 'ti-alert-triangle', s.missingKeys > 0 ? 'danger' : '') +
+        kpiCard('Pending Recovery', s.pendingRecovery, 'ti-user-exclamation', s.pendingRecovery > 0 ? 'warn' : '') +
+        kpiCard('Out of Locker', s.outNow, 'ti-lock-access', s.outNow > 0 ? 'warn' : '') +
+        kpiCard('Damaged', s.damagedKeys, 'ti-alert-octagon', s.damagedKeys > 0 ? 'warn' : '') +
+        kpiCard('In Stock', s.inStockKeys, 'ti-box') +
+        kpiCard('Retired', s.retiredKeys, 'ti-archive') +
+        kpiCard('Disabled', s.disabledKeys, 'ti-lock') +
+        kpiCard('Pending Audit', s.pendingAudit, 'ti-clipboard-list', s.pendingAudit > 0 ? 'warn' : '') +
+        kpiCard('Audit Completion', s.completedAuditPct + '%', 'ti-percentage', 'success') +
+        kpiCard('Duplicate Serials', s.duplicateSerials, 'ti-copy', s.duplicateSerials > 0 ? 'danger' : '') +
+      '</div>' +
+      '<div class="chart-grid">' +
+        chartCard('chart-vertical', 'Keys per Vertical') +
+        chartCard('chart-status', 'Status Breakdown') +
+        chartCard('chart-audit', 'Audit Completion') +
+        chartCard('chart-monthly', 'Monthly Returned Keys') +
+        chartCard('chart-missing-vertical', 'Missing Keys by Vertical') +
+      '</div>';
+
+    drawDashboardCharts_(s.charts);
+  });
+}
+
+function kpiCard(label, value, icon, tone) {
+  return '<div class="kpi-card ' + (tone || '') + '">' +
+    '<div class="kpi-label"><span class="kpi-icon-chip"><i class="ti ' + icon + '"></i></span>' + escapeHtml(label) + '</div>' +
+    '<div class="kpi-value">' + escapeHtml(String(value)) + '</div>' +
+    '</div>';
+}
+
+function chartCard(id, title) {
+  return '<div class="chart-card"><h4>' + escapeHtml(title) + '</h4><div class="chart-canvas-wrap"><canvas id="' + id + '"></canvas></div></div>';
+}
+
+function chartColors_() {
+  var style = getComputedStyle(document.body);
+  return {
+    text: style.getPropertyValue('--text-secondary').trim(), grid: style.getPropertyValue('--border').trim(),
+    accent: style.getPropertyValue('--accent').trim(), success: style.getPropertyValue('--success').trim(),
+    warning: style.getPropertyValue('--warning').trim(), danger: style.getPropertyValue('--danger').trim(),
+    neutral: style.getPropertyValue('--neutral').trim(), purple: style.getPropertyValue('--brand-purple').trim(),
+    blue: style.getPropertyValue('--brand-blue').trim(), pink: style.getPropertyValue('--brand-pink').trim()
+  };
+}
+
+function drawDashboardCharts_(charts) {
+  Object.keys(__charts).forEach(function (k) { if (__charts[k]) __charts[k].destroy(); });
+  if (typeof Chart === 'undefined') {
+    document.querySelectorAll('.chart-canvas-wrap').forEach(function (el) {
+      el.outerHTML = '<div class="chart-load-error">Chart library failed to load (check network access to cdnjs.cloudflare.com).</div>';
+    });
+    return;
+  }
+  var c = chartColors_();
+  var baseOpts = {
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: c.text, font: { size: 11 } } } },
+    scales: {
+      x: { ticks: { color: c.text, font: { size: 11 } }, grid: { color: c.grid } },
+      y: { ticks: { color: c.text, font: { size: 11 } }, grid: { color: c.grid }, beginAtZero: true }
+    }
+  };
+
+  __charts.vertical = new Chart(document.getElementById('chart-vertical'), {
+    type: 'bar',
+    data: { labels: Object.keys(charts.keysPerVertical), datasets: [{ data: Object.values(charts.keysPerVertical), backgroundColor: c.purple, borderRadius: 4 }] },
+    options: Object.assign({}, baseOpts, { plugins: { legend: { display: false } } })
+  });
+
+  var statusLabels = Object.keys(charts.statusBreakdown);
+  __charts.status = new Chart(document.getElementById('chart-status'), {
+    type: 'doughnut',
+    data: { labels: statusLabels, datasets: [{ data: Object.values(charts.statusBreakdown), backgroundColor: [c.success, c.accent, c.danger, c.neutral, c.neutral, c.danger, c.warning] }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: c.text, font: { size: 11 } } } } }
+  });
+
+  __charts.audit = new Chart(document.getElementById('chart-audit'), {
+    type: 'doughnut',
+    data: { labels: Object.keys(charts.auditCompletion), datasets: [{ data: Object.values(charts.auditCompletion), backgroundColor: [c.success, c.warning] }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: c.text, font: { size: 11 } } } } }
+  });
+
+  var months = Object.keys(charts.monthlyReturnedKeys).sort();
+  __charts.monthly = new Chart(document.getElementById('chart-monthly'), {
+    type: 'line',
+    data: { labels: months, datasets: [{ data: months.map(function (m) { return charts.monthlyReturnedKeys[m]; }), borderColor: c.blue, backgroundColor: c.blue, tension: 0.3 }] },
+    options: Object.assign({}, baseOpts, { plugins: { legend: { display: false } } })
+  });
+
+  __charts.missingVertical = new Chart(document.getElementById('chart-missing-vertical'), {
+    type: 'bar',
+    data: { labels: Object.keys(charts.missingByVertical), datasets: [{ data: Object.values(charts.missingByVertical), backgroundColor: c.danger, borderRadius: 4 }] },
+    options: Object.assign({}, baseOpts, { plugins: { legend: { display: false } }, indexAxis: 'y' })
+  });
+}
+
+/* JsKeys — the single data view: list, filters, create/edit, assign, status
+   changes, resignation-equivalent workflow, bulk import, and full history. */
+
+var KEY_STATE = { filters: {}, sortField: null, sortDir: 1, data: [] };
+var STATUS_LIST = ['Assigned', 'Available', 'Missing', 'Disabled', 'Retired', 'Damaged', 'In Stock'];
+
+function renderKeys() {
+  var content = document.getElementById('content');
+  var isAdmin = APP.session.role === 'Admin';
+  content.innerHTML =
+    '<div class="table-wrap">' +
+      '<div class="table-toolbar">' +
+        '<input id="key-search" style="width:240px" placeholder="Search serial, CCMS, email, manager…" />' +
+        '<select id="key-filter-status" style="width:170px"><option value="">All statuses</option>' +
+          STATUS_LIST.map(function (s) { return '<option value="' + s + '">' + s + '</option>'; }).join('') +
+        '</select>' +
+        '<select id="key-filter-vertical" style="width:150px"><option value="">All Verticals</option></select>' +
+        '<div class="spacer"></div>' +
+        (isAdmin ? '<button class="btn btn-sm" id="key-scan-btn"><i class="ti ti-fingerprint"></i> Scan</button>' : '') +
+        (isAdmin ? '<button class="btn btn-sm" id="key-import-btn"><i class="ti ti-upload"></i> Bulk import</button>' : '') +
+        (isAdmin ? '<button class="btn btn-primary btn-sm" id="key-add-btn"><i class="ti ti-plus"></i> Add key</button>' : '') +
+      '</div>' +
+      '<div id="key-table-holder"><div style="padding:40px;text-align:center"><span class="spinner"></span></div></div>' +
+      '<div class="table-footer"><span id="key-count-label"></span></div>' +
+    '</div>';
+
+  document.getElementById('key-search').addEventListener('input', debounce(function (e) {
+    KEY_STATE.filters.query = e.target.value; loadKeys_();
+  }, 300));
+  document.getElementById('key-filter-status').addEventListener('change', function (e) {
+    KEY_STATE.filters.status = e.target.value; loadKeys_();
+  });
+  document.getElementById('key-filter-vertical').addEventListener('change', function (e) {
+    KEY_STATE.filters.vertical = e.target.value; loadKeys_();
+  });
+  if (isAdmin) {
+    document.getElementById('key-add-btn').addEventListener('click', function () { openKeyForm_(); });
+    document.getElementById('key-import-btn').addEventListener('click', openBulkImport_);
+    document.getElementById('key-scan-btn').addEventListener('click', openScanModal_);
+  }
+  populateVerticalFilter_();
+  loadKeys_();
+}
+
+function populateVerticalFilter_() {
+  call('api_listVerticals').then(function (verticals) {
+    var select = document.getElementById('key-filter-vertical');
+    if (!select || select.dataset.populated) return;
+    verticals.forEach(function (v) {
+      var opt = document.createElement('option'); opt.value = v; opt.textContent = v; select.appendChild(opt);
+    });
+    select.dataset.populated = '1';
+  });
+}
+
+function loadKeys_() {
+  call('api_listKeys', KEY_STATE.filters).then(function (rows) {
+    KEY_STATE.data = rows;
+    renderKeyTable_(rows);
+  });
+}
+
+function renderKeyTable_(rows) {
+  var holder = document.getElementById('key-table-holder');
+  document.getElementById('key-count-label').textContent = rows.length + ' key' + (rows.length === 1 ? '' : 's');
+  if (!rows.length) { holder.innerHTML = emptyState('ti-key', 'No YubiKeys match your filters.'); return; }
+
+  var cols = [
+    ['Serial Number', 'serial'], ['Status', 'status'], ['CCMS', 'ccms'],
+    ['Uber Email', 'uberEmail'], ['Manager CCMS', 'managerCcms'], ['Vertical', 'vertical']
+  ];
+  var html = '<table class="data"><thead><tr>' +
+    cols.map(function (c) { return '<th data-field="' + c[1] + '">' + c[0] + '</th>'; }).join('') +
+    '<th></th></tr></thead><tbody>' +
+    rows.map(function (r) {
+      return '<tr data-serial="' + escapeHtml(r.serial) + '">' +
+        '<td class="mono">' + escapeHtml(r.serial) + '</td>' +
+        '<td>' + statusBadge(r.status) + '</td>' +
+        '<td class="mono">' + (r.ccms ? escapeHtml(r.ccms) : '<span class="text-muted">—</span>') + '</td>' +
+        '<td class="text-muted">' + escapeHtml(r.uberEmail || '—') + '</td>' +
+        '<td class="mono">' + escapeHtml(r.managerCcms || '—') + '</td>' +
+        '<td>' + escapeHtml(r.vertical || '—') + '</td>' +
+        '<td style="text-align:right"><i class="ti ti-chevron-right text-muted"></i></td>' +
+        '</tr>';
+    }).join('') +
+    '</tbody></table>';
+  holder.innerHTML = html;
+
+  holder.querySelectorAll('tbody tr').forEach(function (tr) {
+    tr.addEventListener('click', function () { openKeyDetail_(tr.dataset.serial); });
+  });
+  holder.querySelectorAll('thead th[data-field]').forEach(function (th) {
+    th.addEventListener('click', function () {
+      var field = th.dataset.field;
+      KEY_STATE.sortDir = (KEY_STATE.sortField === field) ? -KEY_STATE.sortDir : 1;
+      KEY_STATE.sortField = field;
+      var sorted = rows.slice().sort(function (a, b) {
+        return String(a[field] || '').localeCompare(String(b[field] || '')) * KEY_STATE.sortDir;
+      });
+      renderKeyTable_(sorted);
+    });
+  });
+}
+
+// ---- Detail / full history --------------------------------------------
+
+function openKeyDetail_(serial) {
+  openModal('<div class="modal-header"><h3>Loading…</h3></div><div class="modal-body"><span class="spinner"></span></div>');
+  call('api_getKey', serial).then(function (k) {
+    var isAdmin = APP.session.role === 'Admin';
+    var canResign = isAdmin && k.status === 'Assigned';
+    var canMarkReturned = isAdmin && k.status === 'Missing' && k.ccms;
+
+    var historyHtml = k.history.length
+      ? k.history.map(function (h) { return historyEntryHtml_(h); }).join('')
+      : '<div class="text-muted text-sm">No history recorded for this key yet.</div>';
+
+    openModal(
+      '<div class="modal-header"><h3 class="mono">' + escapeHtml(k.serial) + '</h3><div class="spacer"></div>' + statusBadge(k.status) + '</div>' +
+      '<div class="modal-body">' +
+        '<div class="field-row"><div class="field"><label>CCMS</label><div class="mono">' + escapeHtml(k.ccms || '—') + '</div></div>' +
+        '<div class="field"><label>Vertical</label><div>' + escapeHtml(k.vertical || '—') + '</div></div></div>' +
+        '<div class="field-row"><div class="field"><label>Uber Email</label><div>' + escapeHtml(k.uberEmail || '—') + '</div></div>' +
+        '<div class="field"><label>Manager CCMS</label><div class="mono">' + escapeHtml(k.managerCcms || '—') + '</div></div></div>' +
+        '<div class="field"><label>OTP registered</label><div class="mono">' + (k.otp ? escapeHtml(k.otp) : '<span class="text-muted">Not registered — tap the key in Edit to add it</span>') + '</div></div>' +
+        '<div class="divider"></div><h4>Full history — where it was, where it went, with whom</h4>' +
+        '<div style="max-height:340px;overflow-y:auto">' + historyHtml + '</div>' +
+      '</div>' +
+      '<div class="modal-footer">' +
+        (isAdmin ? '<button class="btn" id="key-edit-btn"><i class="ti ti-edit"></i> Edit</button>' : '') +
+        (isAdmin && k.status !== 'Assigned' ? '<button class="btn" id="key-assign-btn"><i class="ti ti-key"></i> Assign</button>' : '') +
+        (isAdmin ? '<button class="btn" id="key-status-btn"><i class="ti ti-refresh"></i> Change status</button>' : '') +
+        (canResign ? '<button class="btn btn-danger" id="key-resign-btn"><i class="ti ti-user-off"></i> Holder resigned</button>' : '') +
+        (canMarkReturned ? '<button class="btn btn-primary" id="key-returned-btn"><i class="ti ti-check"></i> Mark returned</button>' : '') +
+        '<button class="btn" onclick="closeModal()">Close</button>' +
+      '</div>'
+    );
+
+    if (isAdmin) {
+      var editBtn = document.getElementById('key-edit-btn');
+      if (editBtn) editBtn.addEventListener('click', function () { openKeyForm_(k); });
+      var assignBtn = document.getElementById('key-assign-btn');
+      if (assignBtn) assignBtn.addEventListener('click', function () { openAssignForm_(k.serial); });
+      var statusBtn = document.getElementById('key-status-btn');
+      if (statusBtn) statusBtn.addEventListener('click', function () { openEditKeyStatusForm_(k.serial); });
+      var resignBtn = document.getElementById('key-resign-btn');
+      if (resignBtn) resignBtn.addEventListener('click', function () { openResignForm_(k); });
+      var returnedBtn = document.getElementById('key-returned-btn');
+      if (returnedBtn) returnedBtn.addEventListener('click', function () {
+        confirmDialog('Confirm return', 'Mark ' + k.serial + ' as returned and available for reassignment?', 'Confirm', function () {
+          call('api_markKeyReturned', k.serial, '').then(function () { toast('Key marked as returned.', 'success'); openKeyDetail_(k.serial); loadKeys_(); });
+        });
+      });
+    }
+  });
+}
+
+function historyEntryHtml_(h) {
+  var line;
+  if (h.event === 'Assigned') {
+    line = 'Assigned to <strong class="mono">' + escapeHtml(h.newCcms) + '</strong>' + (h.vertical ? ' (' + escapeHtml(h.vertical) + ')' : '');
+  } else if (h.event === 'Status Change') {
+    line = 'Status changed <strong>' + escapeHtml(h.previousStatus) + '</strong> → <strong>' + escapeHtml(h.newStatus) + '</strong>' +
+      (h.newCcms ? ' — holder: <span class="mono">' + escapeHtml(h.newCcms) + '</span>' : '');
+  } else if (h.event === 'Created') {
+    line = 'Key added to the system' + (h.newStatus ? ' with status <strong>' + escapeHtml(h.newStatus) + '</strong>' : '');
+  } else if (h.event === 'Details Updated') {
+    line = 'Details updated' + (h.previousCcms !== h.newCcms ? (' — CCMS <span class="mono">' + escapeHtml(h.previousCcms || '—') + '</span> → <span class="mono">' + escapeHtml(h.newCcms || '—') + '</span>') : '');
+  } else if (h.event === 'Deleted') {
+    line = 'Key removed from the system';
+  } else {
+    line = escapeHtml(h.event);
+  }
+  return '<div style="padding:10px 0;border-bottom:1px solid var(--border);font-size:12.5px">' +
+    '<div style="display:flex;justify-content:space-between"><span>' + line + '</span>' +
+    '<span class="text-muted" style="white-space:nowrap;margin-left:8px">' + escapeHtml(h.date) + '</span></div>' +
+    '<div class="text-muted" style="margin-top:2px">by ' + escapeHtml(h.recordedBy) + (h.notes ? ' — ' + escapeHtml(h.notes) : '') + '</div>' +
+    '</div>';
+}
+
+// ---- Forms -----------------------------------------------------------
+
+function openKeyForm_(existing) {
+  var isEdit = !!existing;
+  openModal(
+    '<div class="modal-header"><h3>' + (isEdit ? 'Edit key' : 'Add key') + '</h3></div>' +
+    '<div class="modal-body">' +
+      '<div class="field-row">' +
+        '<div class="field"><label>Serial Number</label><input id="f-serial" value="' + (existing ? escapeHtml(existing.serial) : '') + '" ' + (isEdit ? 'disabled' : '') + ' /></div>' +
+        (!isEdit ? '<div class="field"><label>Status</label><select id="f-status">' + STATUS_LIST.map(function (s) { return '<option value="' + s + '">' + s + '</option>'; }).join('') + '</select></div>' : '') +
+      '</div>' +
+      '<div class="field-row">' +
+        '<div class="field"><label>CCMS</label><input id="f-ccms" value="' + (existing ? escapeHtml(existing.ccms) : '') + '" /></div>' +
+        '<div class="field"><label>Uber Email</label><input id="f-uber-email" value="' + (existing ? escapeHtml(existing.uberEmail) : '') + '" /></div>' +
+      '</div>' +
+      '<div class="field-row">' +
+        '<div class="field"><label>Manager CCMS</label><input id="f-manager-ccms" value="' + (existing ? escapeHtml(existing.managerCcms) : '') + '" /></div>' +
+        '<div class="field"><label>Vertical</label><input id="f-vertical" value="' + (existing ? escapeHtml(existing.vertical) : '') + '" /></div>' +
+      '</div>' +
+      '<div class="field">' +
+        '<label>OTP <span class="text-muted" style="font-weight:400">(plug in the key and tap it to capture, or leave blank)</span></label>' +
+        '<input id="f-otp" class="mono" value="' + (existing ? escapeHtml(existing.otp) : '') + '" placeholder="Tap the key here…" />' +
+      '</div>' +
+    '</div>' +
+    '<div class="modal-footer"><button class="btn" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn btn-primary" id="f-save-btn">' + (isEdit ? 'Save changes' : 'Create key') + '</button></div>'
+  );
+
+  attachOtpScan(document.getElementById('f-otp'), function () {}, { capture: true });
+
+  document.getElementById('f-save-btn').addEventListener('click', function () {
+    var payload = {
+      ccms: document.getElementById('f-ccms').value.trim(),
+      uberEmail: document.getElementById('f-uber-email').value.trim(),
+      managerCcms: document.getElementById('f-manager-ccms').value.trim(),
+      vertical: document.getElementById('f-vertical').value.trim(),
+      otp: document.getElementById('f-otp').value.trim()
+    };
+    if (isEdit) {
+      call('api_updateKey', existing.serial, payload).then(function () {
+        toast('Key updated.', 'success'); closeModal(); loadKeys_();
+      });
+    } else {
+      payload.serial = document.getElementById('f-serial').value.trim();
+      payload.status = document.getElementById('f-status').value;
+      call('api_createKey', payload).then(function () {
+        toast('Key created.', 'success'); closeModal(); loadKeys_();
+      });
+    }
+  });
+}
+
+function openAssignForm_(serial) {
+  openModal(
+    '<div class="modal-header"><h3>Assign ' + escapeHtml(serial) + '</h3></div>' +
+    '<div class="modal-body">' +
+      '<div class="field"><label>CCMS</label><input id="f-a-ccms" /></div>' +
+      '<div class="field"><label>Uber Email</label><input id="f-a-email" /></div>' +
+      '<div class="field"><label>Manager CCMS</label><input id="f-a-manager" /></div>' +
+      '<div class="field"><label>Vertical</label><input id="f-a-vertical" /></div>' +
+    '</div>' +
+    '<div class="modal-footer"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="f-a-save">Assign</button></div>'
+  );
+  document.getElementById('f-a-save').addEventListener('click', function () {
+    var payload = {
+      ccms: document.getElementById('f-a-ccms').value.trim(),
+      uberEmail: document.getElementById('f-a-email').value.trim(),
+      managerCcms: document.getElementById('f-a-manager').value.trim(),
+      vertical: document.getElementById('f-a-vertical').value.trim()
+    };
+    call('api_assignKey', serial, payload).then(function () {
+      toast('Key assigned.', 'success'); closeModal(); loadKeys_();
+    });
+  });
+}
+
+function openEditKeyStatusForm_(serial) {
+  openModal(
+    '<div class="modal-header"><h3>Change status — ' + escapeHtml(serial) + '</h3></div>' +
+    '<div class="modal-body">' +
+      '<div class="field"><label>New status</label><select id="f-key-status">' +
+        STATUS_LIST.map(function (s) { return '<option value="' + s + '">' + s + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="field"><label>Notes</label><textarea id="f-key-status-notes" rows="2" placeholder="Reason for this change (optional)"></textarea></div>' +
+      '<p class="text-sm text-muted">Setting status to Available clears the current holder\'s CCMS/email/manager, freeing the key for reassignment. Every other status keeps the holder on record for context.</p>' +
+    '</div>' +
+    '<div class="modal-footer"><button class="btn" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn btn-primary" id="f-key-status-save">Save</button></div>'
+  );
+  document.getElementById('f-key-status-save').addEventListener('click', function () {
+    var status = document.getElementById('f-key-status').value;
+    var notes = document.getElementById('f-key-status-notes').value.trim();
+    call('api_adminSetKeyStatus', serial, status, notes).then(function () {
+      toast('Key status updated.', 'success'); closeModal(); openKeyDetail_(serial); loadKeys_();
+    });
+  });
+}
+
+function openResignForm_(k) {
+  openModal(
+    '<div class="modal-header"><h3>Holder resigned — ' + escapeHtml(k.ccms) + '</h3></div>' +
+    '<div class="modal-body">' +
+      '<div class="field"><label>Has the YubiKey been returned?</label>' +
+        '<div class="pill-select">' +
+          '<div class="pill active" data-val="yes">Yes, returned</div>' +
+          '<div class="pill" data-val="no">No, not yet</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="field"><label>Notes</label><textarea id="f-resign-notes" rows="2" placeholder="Optional"></textarea></div>' +
+    '</div>' +
+    '<div class="modal-footer"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-danger" id="f-resign-save">Confirm</button></div>'
+  );
+  var selected = 'yes';
+  document.querySelectorAll('.pill-select .pill').forEach(function (p) {
+    p.addEventListener('click', function () {
+      document.querySelectorAll('.pill-select .pill').forEach(function (x) { x.classList.remove('active'); });
+      p.classList.add('active'); selected = p.dataset.val;
+    });
+  });
+  document.getElementById('f-resign-save').addEventListener('click', function () {
+    call('api_resignHolder', k.ccms, {
+      keyReturned: selected === 'yes',
+      notes: document.getElementById('f-resign-notes').value.trim()
+    }).then(function (res) {
+      toast(res.pendingRecovery ? 'Marked resigned. Key flagged as missing pending recovery.' : 'Marked resigned. Key returned.', 'success');
+      closeModal(); loadKeys_();
+    });
+  });
+}
+
+function openBulkImport_() {
+  openModal(
+    '<div class="modal-header"><h3>Bulk import keys</h3></div>' +
+    '<div class="modal-body">' +
+      '<p class="text-sm">Paste CSV with header row: <code>Serial Number,Status,CCMS,Uber Email,Manager CCMS,Vertical,OTP</code></p>' +
+      '<textarea id="f-bulk-csv" rows="10" placeholder="Serial Number,Status,CCMS,Uber Email,Manager CCMS,Vertical,OTP"></textarea>' +
+      '<div id="bulk-result" class="text-sm mt-2"></div>' +
+    '</div>' +
+    '<div class="modal-footer"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="f-bulk-save">Import</button></div>'
+  );
+  document.getElementById('f-bulk-save').addEventListener('click', function () {
+    var csv = document.getElementById('f-bulk-csv').value.trim();
+    if (!csv) return;
+    var lines = csv.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+    var header = lines[0].split(',').map(function (h) { return h.trim().toLowerCase(); });
+    var rows = lines.slice(1).map(function (line) {
+      var cells = line.split(',').map(function (c) { return c.trim(); });
+      var obj = {};
+      header.forEach(function (h, i) { obj[h] = cells[i] || ''; });
+      return {
+        serial: obj['serial number'], status: obj['status'], ccms: obj['ccms'],
+        uberEmail: obj['uber email'], managerCcms: obj['manager ccms'], vertical: obj['vertical'],
+        otp: obj['otp']
+      };
+    });
+    call('api_bulkImportKeys', rows).then(function (res) {
+      document.getElementById('bulk-result').innerHTML =
+        '<span style="color:var(--success)">' + res.created + ' created</span>, ' +
+        '<span style="color:var(--danger)">' + res.skipped + ' skipped</span>' +
+        (res.errors.length ? '<div class="text-muted mt-2">' + res.errors.slice(0, 5).map(escapeHtml).join('<br>') + '</div>' : '');
+      toast(res.created + ' key(s) imported.', 'success');
+      loadKeys_();
+    });
+  });
+}
+
+function showDuplicates_() {
+  call('api_findDuplicateSerials').then(function (dupes) {
+    var html = dupes.length
+      ? dupes.map(function (d) {
+          return '<div style="padding:10px 0;border-bottom:1px solid var(--border)">' +
+            '<div class="mono" style="font-weight:600">' + escapeHtml(d.serial) + '</div>' +
+            '<div class="text-sm text-muted">appears on ' + d.rowCount + ' rows</div></div>';
+        }).join('')
+      : emptyState('ti-circle-check', 'No duplicate serial numbers found.');
+    openModal(
+      '<div class="modal-header"><h3>Duplicate serial numbers</h3></div>' +
+      '<div class="modal-body">' + html + '</div>' +
+      '<div class="modal-footer"><button class="btn" onclick="closeModal()">Close</button></div>'
+    );
+  });
+}
+
+// ---- Pending recovery -----------------------------------------------------
+
+function renderPendingRecovery() {
+  var content = document.getElementById('content');
+  content.innerHTML = '<div class="table-wrap"><div id="pr-holder" style="padding:40px;text-align:center"><span class="spinner"></span></div></div>';
+  call('api_getPendingRecovery').then(function (rows) {
+    var holder = document.getElementById('pr-holder');
+    document.getElementById('nav-pending-badge').style.display = rows.length ? 'inline-flex' : 'none';
+    document.getElementById('nav-pending-badge').textContent = rows.length;
+    if (!rows.length) { holder.innerHTML = emptyState('ti-circle-check', 'No missing keys are awaiting recovery.'); return; }
+
+    holder.innerHTML = '<table class="data"><thead><tr><th>Serial</th><th>CCMS</th><th>Uber Email</th>' +
+      '<th>Manager CCMS</th><th>Vertical</th><th></th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        return '<tr><td class="mono">' + escapeHtml(r.serial) + '</td><td class="mono">' + escapeHtml(r.ccms) + '</td>' +
+          '<td>' + escapeHtml(r.uberEmail || '—') + '</td><td class="mono">' + escapeHtml(r.managerCcms || '—') + '</td>' +
+          '<td>' + escapeHtml(r.vertical || '—') + '</td>' +
+          '<td style="text-align:right">' + (APP.session.role === 'Admin' ? '<button class="btn btn-sm pr-return-btn" data-serial="' + escapeHtml(r.serial) + '">Mark returned</button>' : '') + '</td></tr>';
+      }).join('') + '</tbody></table>';
+
+    holder.querySelectorAll('.pr-return-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        call('api_markKeyReturned', btn.dataset.serial, '').then(function () { toast('Key marked as returned.', 'success'); renderPendingRecovery(); });
+      });
+    });
+  });
+}
+
+/* JsLocker — locker station (tap to check a key out or back in) and the
+   list of keys that have not been returned. */
+
+function renderLocker() {
+  var content = document.getElementById('content');
+  var isAdmin = APP.session.role === 'Admin';
+  content.innerHTML =
+    (isAdmin
+      ? '<div class="table-wrap" style="padding:20px;margin-bottom:16px">' +
+          '<input id="locker-input" class="scan-input" placeholder="Tap the key on the reader…" autocomplete="off" />' +
+          '<div class="scan-hint"><span class="scan-pulse"></span>First tap checks the key out, second tap checks it back in</div>' +
+          '<div style="text-align:center;margin-top:12px"><button class="btn" id="locker-nfc-btn"><i class="ti ti-nfc"></i> Scan with phone NFC</button>' +
+            '<div class="text-sm text-muted" id="locker-nfc-note" style="margin-top:6px"></div></div>' +
+          '<div id="locker-result" style="margin-top:14px;display:grid;gap:8px"></div>' +
+        '</div>'
+      : '') +
+    '<div class="toolbar" style="display:flex;gap:8px;margin-bottom:12px">' +
+      '<button class="btn btn-sm" id="lk-tab-out">Not returned</button>' +
+      '<button class="btn btn-sm" id="lk-tab-today">Today</button>' +
+      '<button class="btn btn-sm" id="lk-tab-all">All trips</button>' +
+    '</div>' +
+    '<div class="table-wrap"><div id="locker-list" style="padding:40px;text-align:center"><span class="spinner"></span></div></div>';
+
+  var mode = 'out';
+  function today_() {
+    var d = new Date();
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
+  function hoursLabel_(h) {
+    var m = Math.round(h * 60);
+    return Math.floor(m / 60) + 'h ' + (m % 60) + 'm';
+  }
+  var rows = [];
+  function loadList() {
+    var req = mode === 'out' ? call('api_listOutNow')
+      : call('api_listMovements', mode === 'today' ? { date: today_() } : {});
+    req.then(function (data) { rows = data; draw(); });
+  }
+  function draw() {
+    var holder = document.getElementById('locker-list');
+    if (!holder) return;
+    (function () {
+      if (!rows.length) {
+        holder.innerHTML = emptyState('ti-circle-check', mode === 'out' ? 'Every key is back in the locker.' : 'No trips recorded.');
+        return;
+      }
+      holder.innerHTML = '<table class="data"><thead><tr><th>Serial</th><th>CCMS</th><th>Vertical</th>' +
+        '<th>Checked out</th><th>Returned</th><th>Time out</th><th></th></tr></thead><tbody>' +
+        rows.map(function (r) {
+          var state = r.isOpen
+            ? '<span class="badge ' + (r.overdue ? 'badge-lost' : 'badge-pending') + '">Out</span>'
+            : escapeHtml(r.returnedAt);
+          return '<tr><td class="mono">' + escapeHtml(r.serial) + '</td><td class="mono">' + escapeHtml(r.ccms || '—') + '</td>' +
+            '<td>' + escapeHtml(r.vertical || '—') + '</td><td>' + escapeHtml(r.checkedOutAt) + '</td>' +
+            '<td>' + state + '</td><td' + (r.overdue ? ' style="color:var(--danger);font-weight:700"' : '') + '>' + hoursLabel_(r.hoursOut) + '</td>' +
+            '<td style="text-align:right">' +
+              (r.isOpen && APP.session.role === 'Admin' ? '<button class="btn btn-sm lk-close" data-id="' + escapeHtml(r.id) + '">Close trip</button> ' : '') +
+              '<button class="btn btn-sm lk-view" data-serial="' + escapeHtml(r.serial) + '">History</button></td></tr>';
+        }).join('') + '</tbody></table>';
+      holder.querySelectorAll('.lk-view').forEach(function (b) {
+        b.addEventListener('click', function () { openKeyDetail_(b.dataset.serial); });
+      });
+      holder.querySelectorAll('.lk-close').forEach(function (b) {
+        b.addEventListener('click', function () {
+          call('api_forceCheckIn', b.dataset.id, '').then(function () { toast('Trip closed.', 'success'); loadList(); });
+        });
+      });
+    })();
+  }
+  /** Applies a scan result to the list on screen without another server call. */
+  function applyScan(res) {
+    var m = res.movement;
+    rows = rows.filter(function (r) { return r.id !== m.id; });
+    if (res.action === 'out' || mode !== 'out') rows.unshift(m);
+    draw();
+  }
+  function setMode(m) {
+    mode = m;
+    ['out', 'today', 'all'].forEach(function (k) {
+      document.getElementById('lk-tab-' + k).classList.toggle('btn-primary', k === m);
+    });
+    loadList();
+  }
+  ['out', 'today', 'all'].forEach(function (k) {
+    document.getElementById('lk-tab-' + k).addEventListener('click', function () { setMode(k); });
+  });
+  setMode('out');
+
+  var input = document.getElementById('locker-input');
+  if (!input) return;
+  input.focus();
+  document.getElementById('content').addEventListener('click', function (e) {
+    if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') input.focus();
+  });
+  function handleScan(prefix) {
+    // Show a placeholder immediately so the next person can scan while this one is saving.
+    var feed = document.getElementById('locker-result');
+    var card = document.createElement('div');
+    card.style.cssText = 'text-align:center;padding:10px;border-radius:12px;background:var(--neutral-bg);color:var(--neutral-text)';
+    card.innerHTML = '<span class="spinner"></span>';
+    feed.insertBefore(card, feed.firstChild);
+    while (feed.children.length > 5) feed.removeChild(feed.lastChild);
+
+    call('api_lockerScan', prefix).then(function (res) {
+      var out = res.action === 'out';
+      var tone = out ? 'warning' : 'success';
+      card.style.background = 'var(--' + tone + '-bg)';
+      card.style.color = 'var(--' + tone + '-text)';
+      card.innerHTML = '<div style="font-size:17px;font-weight:800">' + (out ? 'Checked out' : 'Returned') + '</div>' +
+        '<div class="mono" style="margin-top:2px">' + escapeHtml(res.key.serial) + (res.key.ccms ? ' · ' + escapeHtml(res.key.ccms) : '') +
+        (out ? '' : ' · out ' + hoursLabel_(res.movement.hoursOut)) + '</div>';
+      applyScan(res);
+    }).catch(function () { if (card.parentNode) feed.removeChild(card); });
+    input.focus();
+  }
+  attachOtpScan(input, handleScan);
+
+  // Phone NFC: reads the key's NDEF link (my.yubico.com/yk/#<otp>) and
+  // runs it through the same check-out / check-in path as a reader tap.
+  var nfcBtn = document.getElementById('locker-nfc-btn');
+  var nfcNote = document.getElementById('locker-nfc-note');
+  if (nfcBtn) {
+    if (!('NDEFReader' in window)) {
+      nfcBtn.disabled = true;
+      nfcNote.textContent = 'Phone NFC needs Chrome on Android. iPhone browsers cannot read NFC tags from a web page.';
+    } else {
+      var nfcReader = null, nfcOn = false;
+      nfcBtn.addEventListener('click', function () {
+        if (nfcOn) { nfcOn = false; nfcReader = null; nfcBtn.innerHTML = '<i class="ti ti-nfc"></i> Scan with phone NFC'; nfcNote.textContent = ''; return; }
+        nfcReader = new NDEFReader();
+        nfcReader.scan().then(function () {
+          nfcOn = true;
+          nfcBtn.innerHTML = '<i class="ti ti-player-stop"></i> Stop NFC scan';
+          nfcNote.textContent = 'Ready. Hold the key against the back of the phone.';
+          nfcReader.onreading = function (ev) {
+            if (!nfcOn) return;
+            var prefix = otpFromNdef_(ev.message);
+            if (prefix) { if (navigator.vibrate) navigator.vibrate(60); handleScan(prefix); }
+            else toast('That tag has no YubiKey OTP link.', 'error');
+          };
+          nfcReader.onreadingerror = function () { toast('Could not read the tag, try again.', 'error'); };
+        }).catch(function (err) {
+          nfcOn = false;
+          nfcNote.textContent = 'NFC is blocked or turned off: ' + (err && err.message ? err.message : err);
+        });
+      });
+    }
+  }
+}
+
+// Pulls the 12-character public ID out of a tag's NDEF records.
+function otpFromNdef_(message) {
+  var dec = new TextDecoder();
+  for (var i = 0; i < message.records.length; i++) {
+    var rec = message.records[i];
+    if (!rec.data) continue;
+    var text = dec.decode(rec.data);
+    var tail = text.indexOf('#') >= 0 ? text.slice(text.lastIndexOf('#') + 1) : text;
+    tail = tail.trim();
+    if (looksLikeOtpPrefix(tail)) return tail.slice(0, 12).toLowerCase();
+  }
+  return null;
+}
+
+/* JsAudits — campaign list, launch flow, campaign progress dashboard,
+   and the page a manager uses to confirm each key. */
+
+function renderAudits() {
+  var content = document.getElementById('content');
+  var isAdmin = APP.session.role === 'Admin';
+  content.innerHTML =
+    '<div class="flex justify-between items-center mb-3">' +
+      '<div class="text-muted text-sm">Launch and track periodic YubiKey audit campaigns by Vertical.</div>' +
+      (isAdmin ? '<button class="btn btn-primary btn-sm" id="audit-launch-btn"><i class="ti ti-plus"></i> Launch campaign</button>' : '') +
+    '</div>' +
+    '<div id="audit-list-holder" style="padding:40px;text-align:center"><span class="spinner"></span></div>';
+
+  if (isAdmin) document.getElementById('audit-launch-btn').addEventListener('click', openLaunchCampaign_);
+  loadCampaigns_();
+}
+
+function loadCampaigns_() {
+  call('api_listAuditCampaigns').then(function (campaigns) {
+    var holder = document.getElementById('audit-list-holder');
+    if (!campaigns.length) { holder.innerHTML = emptyState('ti-clipboard-check', 'No audit campaigns yet.'); return; }
+    holder.innerHTML = '<div class="chart-grid">' + campaigns.map(function (c) {
+      return '<div class="card card-pad" style="cursor:pointer" data-id="' + c.id + '">' +
+        '<div class="flex justify-between items-center"><h3>' + escapeHtml(c.name) + '</h3>' +
+        '<span class="badge ' + (c.status === 'Active' ? 'badge-active' : 'badge-disabled') + '"><span class="badge-dot"></span>' + c.status + '</span></div>' +
+        '<div class="text-sm text-muted mt-2">Verticals: ' + escapeHtml(c.verticals.join(', ')) + '</div>' +
+        '<div class="text-sm text-muted">Launched ' + escapeHtml(c.launchDate) + (c.dueDate ? ' · Due ' + escapeHtml(c.dueDate) : '') + '</div>' +
+        '<div class="progress-bar mt-3"><div style="width:' + c.completionPct + '%"></div></div>' +
+        '<div class="text-sm mt-2">' + c.completedItems + ' / ' + c.totalItems + ' confirmed (' + c.completionPct + '%)</div>' +
+        '</div>';
+    }).join('') + '</div>';
+
+    holder.querySelectorAll('[data-id]').forEach(function (el) {
+      el.addEventListener('click', function () { navigate('audit-detail', { campaignId: el.dataset.id }); });
+    });
+  });
+}
+
+function openLaunchCampaign_() {
+  openModal('<div class="modal-header"><h3>Launch audit campaign</h3></div><div class="modal-body"><span class="spinner"></span> Loading Verticals…</div>');
+  call('api_listVerticals').then(function (verticals) {
+    if (!verticals.length) {
+      openModal(
+        '<div class="modal-header"><h3>Launch audit campaign</h3></div>' +
+        '<div class="modal-body">' + emptyState('ti-building', 'No Verticals found. Add at least one assigned key with a Vertical before launching an audit.') + '</div>' +
+        '<div class="modal-footer"><button class="btn" onclick="closeModal()">Close</button></div>'
+      );
+      return;
+    }
+    openModal(
+      '<div class="modal-header"><h3>Launch audit campaign</h3></div>' +
+      '<div class="modal-body">' +
+        '<div class="field"><label>Campaign name</label><input id="f-audit-name" placeholder="e.g. Q3 2026 YubiKey Audit" /></div>' +
+        '<div class="field"><label>Verticals to include</label><div class="pill-select" id="f-audit-verticals">' +
+          verticals.map(function (v) { return '<div class="pill" data-val="' + escapeHtml(v) + '">' + escapeHtml(v) + '</div>'; }).join('') +
+        '</div></div>' +
+        '<div class="field"><label>Due date</label><input type="date" id="f-audit-due" /></div>' +
+      '</div>' +
+      '<div class="modal-footer"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="f-audit-launch">Launch</button></div>'
+    );
+    var selectedVerticals = [];
+    document.querySelectorAll('#f-audit-verticals .pill').forEach(function (p) {
+      p.addEventListener('click', function () {
+        p.classList.toggle('active');
+        var val = p.dataset.val;
+        var idx = selectedVerticals.indexOf(val);
+        if (idx === -1) selectedVerticals.push(val); else selectedVerticals.splice(idx, 1);
+      });
+    });
+    document.getElementById('f-audit-launch').addEventListener('click', function () {
+      var name = document.getElementById('f-audit-name').value.trim();
+      if (!name || !selectedVerticals.length) { toast('Enter a name and select at least one Vertical.', 'error'); return; }
+      call('api_launchAuditCampaign', { name: name, verticals: selectedVerticals, dueDate: document.getElementById('f-audit-due').value }).then(function (res) {
+        toast('Campaign launched. Audit request emails sent for ' + res.keyCount + ' assigned key(s).', 'success');
+        closeModal(); navigate('audit-detail', { campaignId: res.campaignId });
+      });
+    });
+  });
+}
+
+function renderAuditDetail(params) {
+  var content = document.getElementById('content');
+  content.innerHTML = '<div id="audit-detail-holder" style="padding:40px;text-align:center"><span class="spinner"></span></div>';
+  call('api_getAuditCampaignDetail', params.campaignId).then(function (d) {
+    var isAdmin = APP.session.role === 'Admin';
+    var holder = document.getElementById('audit-detail-holder');
+    holder.innerHTML =
+      '<div class="flex justify-between items-center mb-3">' +
+        '<div><h2>' + escapeHtml(d.campaign.name) + '</h2><div class="text-muted text-sm">Verticals: ' + escapeHtml(d.campaign.verticals.join(', ')) + '</div></div>' +
+        '<div class="flex gap-2">' +
+          (isAdmin && d.campaign.status === 'Active' ? '<button class="btn btn-sm" id="audit-remind-btn"><i class="ti ti-bell"></i> Send reminders</button>' : '') +
+          (isAdmin && d.campaign.status === 'Active' ? '<button class="btn btn-sm btn-danger" id="audit-close-btn"><i class="ti ti-lock"></i> Close campaign</button>' : '') +
+          '<button class="btn btn-sm btn-primary" id="audit-fill-btn"><i class="ti ti-clipboard-check"></i> Open my queue</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="kpi-grid">' +
+        kpiCard('Completion', d.campaign.completionPct + '%', 'ti-percentage', 'success') +
+        kpiCard('Not Audited', d.notAudited, 'ti-clock', d.notAudited > 0 ? 'warn' : '') +
+        kpiCard('Missing Keys', d.missingKeys, 'ti-alert-triangle', d.missingKeys > 0 ? 'danger' : '') +
+        kpiCard('Wrong Serials', d.wrongSerials, 'ti-alert-circle', d.wrongSerials > 0 ? 'warn' : '') +
+      '</div>' +
+      '<div class="card card-pad mb-3"><h3>Managers</h3><table class="data"><thead><tr><th>Manager</th><th>Vertical</th><th>Progress</th></tr></thead><tbody>' +
+      d.managers.map(function (m) {
+        var pct = m.total ? Math.round((m.completed / m.total) * 100) : 0;
+        return '<tr><td>' + escapeHtml(m.manager) + '</td><td>' + escapeHtml(m.vertical) + '</td>' +
+          '<td>' + m.completed + '/' + m.total + ' (' + pct + '%)</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<div class="table-wrap"><div class="table-toolbar"><h3 style="margin:0">Key results</h3></div><table class="data">' +
+      '<thead><tr><th>CCMS</th><th>Vertical</th><th>Manager</th><th>Serial on File</th><th>Result</th><th>Comment</th></tr></thead><tbody>' +
+      d.items.map(function (i) {
+        return '<tr><td class="mono">' + escapeHtml(i.ccms) + '</td><td>' + escapeHtml(i.vertical) + '</td><td>' + escapeHtml(i.manager) + '</td>' +
+          '<td class="mono">' + escapeHtml(i.serialOnFile) + '</td>' +
+          '<td>' + (i.result ? auditResultBadge_(i.result) : '<span class="text-muted">Pending</span>') + '</td>' +
+          '<td class="text-muted text-sm">' + escapeHtml(i.comment || '') + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+
+    document.getElementById('audit-fill-btn').addEventListener('click', function () { navigate('audit', { campaign: params.campaignId }); });
+    var remindBtn = document.getElementById('audit-remind-btn');
+    if (remindBtn) remindBtn.addEventListener('click', function () {
+      call('api_sendAuditReminders', params.campaignId).then(function () { toast('Reminder emails sent.', 'success'); });
+    });
+    var closeBtn = document.getElementById('audit-close-btn');
+    if (closeBtn) closeBtn.addEventListener('click', function () {
+      confirmDialog('Close campaign', 'Close this audit campaign? Managers will no longer be able to submit results.', 'Close campaign', function () {
+        call('api_closeAuditCampaign', params.campaignId).then(function () { toast('Campaign closed.', 'success'); renderAuditDetail(params); });
+      }, true);
+    });
+  });
+}
+
+function auditResultBadge_(result) {
+  var map = { 'Has Key': 'badge-active', 'No Key': 'badge-lost', 'Resigned': 'badge-resigned', 'Unavailable': 'badge-pending', 'Wrong Serial': 'badge-pending', 'Damaged': 'badge-lost' };
+  return '<span class="badge ' + (map[result] || 'badge-disabled') + '"><span class="badge-dot"></span>' + escapeHtml(result) + '</span>';
+}
+
+// ---- Manager's audit-fill queue -------------------------------------------
+
+function renderAuditFillPage(params) {
+  var content = document.getElementById('content');
+  var campaignId = params.campaign || params.campaignId;
+  if (!campaignId) { content.innerHTML = emptyState('ti-clipboard-x', 'No audit campaign specified.'); return; }
+  content.innerHTML = '<div id="audit-fill-holder" style="padding:40px;text-align:center"><span class="spinner"></span></div>';
+
+  call('api_getMyAuditQueue', campaignId).then(function (q) {
+    var holder = document.getElementById('audit-fill-holder');
+    if (!q.campaign) { holder.innerHTML = emptyState('ti-clipboard-x', 'Campaign not found.'); return; }
+    if (!q.items.length) { holder.innerHTML = emptyState('ti-circle-check', 'You have no keys to audit in this campaign.'); return; }
+
+    var results = ['Has Key', 'No Key', 'Resigned', 'Unavailable', 'Wrong Serial', 'Damaged'];
+    holder.innerHTML =
+      '<div class="card card-pad mb-3"><h2>' + escapeHtml(q.campaign.name) + '</h2>' +
+      '<p class="text-sm">Plug in each key and tap it below to confirm it instantly as "Has Key" — no clicking needed. ' +
+      'If a key is missing, damaged, or wrong, use the manual options on that row instead.</p>' +
+      '<input id="audit-scan-input" class="scan-input" placeholder="Tap a key here to confirm it…" autocomplete="off" />' +
+      '<div class="scan-hint"><span class="scan-pulse"></span>Waiting for a tap — no need to press Enter</div>' +
+      '</div>' +
+      '<div id="audit-items-holder"></div>';
+
+    renderAuditQueueItems_(q.items, campaignId, params);
+
+    var scanInput = document.getElementById('audit-scan-input');
+    scanInput.focus();
+    attachOtpScan(scanInput, function (prefix) {
+      call('api_resolveOtp', prefix).then(function (key) {
+        var item = q.items.find(function (i) { return String(i.ccms) === String(key.ccms); });
+        if (!item) {
+          toast('That key (' + key.serial + ') isn\'t in your audit queue for this campaign.', 'error');
+          scanInput.focus();
+          return;
+        }
+        if (item.result) {
+          toast(key.serial + ' was already confirmed as "' + item.result + '".', 'warning');
+          scanInput.focus();
+          return;
+        }
+        call('api_submitAuditResult', campaignId, key.ccms, 'Has Key', 'Confirmed via OTP scan').then(function () {
+          toast(key.serial + ' confirmed — Has Key.', 'success');
+          renderAuditFillPage(params);
+        });
+      }).catch(function () { scanInput.focus(); });
+    });
+  });
+}
+
+function renderAuditQueueItems_(items, campaignId, params) {
+    var results = ['Has Key', 'No Key', 'Resigned', 'Unavailable', 'Wrong Serial', 'Damaged'];
+    var holder = document.getElementById('audit-items-holder');
+    holder.innerHTML = items.map(function (item) {
+        return '<div class="card card-pad mb-3" data-ccms="' + escapeHtml(item.ccms) + '">' +
+          '<div class="flex justify-between items-center">' +
+            '<div><strong class="mono">' + escapeHtml(item.ccms) + '</strong><div class="text-muted text-sm">Serial on file: <span class="mono">' + escapeHtml(item.serialOnFile || 'none') + '</span></div></div>' +
+            (item.result ? auditResultBadge_(item.result) : '') +
+          '</div>' +
+          (item.result ? '' :
+            '<div class="pill-select mt-3 audit-result-pills">' +
+              results.map(function (r) { return '<div class="pill" data-val="' + r + '">' + r + '</div>'; }).join('') +
+            '</div>' +
+            '<textarea class="mt-2 audit-comment" rows="1" placeholder="Comment (optional)"></textarea>' +
+            '<button class="btn btn-sm btn-primary mt-2 audit-submit-btn">Submit</button>') +
+          '</div>';
+      }).join('');
+
+    holder.querySelectorAll('.card[data-ccms]').forEach(function (card) {
+      var pills = card.querySelectorAll('.audit-result-pills .pill');
+      var selected = null;
+      pills.forEach(function (p) {
+        p.addEventListener('click', function () {
+          pills.forEach(function (x) { x.classList.remove('active'); });
+          p.classList.add('active'); selected = p.dataset.val;
+        });
+      });
+      var submitBtn = card.querySelector('.audit-submit-btn');
+      if (submitBtn) submitBtn.addEventListener('click', function () {
+        if (!selected) { toast('Select a result first.', 'error'); return; }
+        var comment = card.querySelector('.audit-comment').value.trim();
+        call('api_submitAuditResult', campaignId, card.dataset.ccms, selected, comment).then(function () {
+          toast('Result submitted.', 'success');
+          renderAuditFillPage(params);
+        });
+      });
+    });
+}
+
+/* JsReports — export builder */
+
+var REPORT_TYPES = [
+  ['AssignedKeys', 'Assigned Keys', 'ti-user-check'],
+  ['AvailableKeys', 'Available Keys', 'ti-key'],
+  ['MissingKeys', 'Missing Keys', 'ti-alert-triangle'],
+  ['DamagedKeys', 'Damaged Keys', 'ti-alert-octagon'],
+  ['InStockKeys', 'In Stock Keys', 'ti-box'],
+  ['AuditReport', 'Audit Report', 'ti-clipboard-check'],
+  ['VerticalReport', 'Vertical Report', 'ti-building'],
+  ['ManagerReport', 'Manager Report', 'ti-user-star'],
+  ['AllKeys', 'All Keys', 'ti-list']
+];
+
+function renderReports() {
+  var content = document.getElementById('content');
+  content.innerHTML =
+    '<div class="chart-grid">' +
+    REPORT_TYPES.map(function (r) {
+      return '<div class="card card-pad">' +
+        '<div class="flex items-center gap-2"><i class="ti ' + r[2] + '" style="font-size:20px;color:var(--accent)"></i><h3 style="margin:0">' + r[1] + '</h3></div>' +
+        '<p class="text-sm mt-2">Export ' + r[1].toLowerCase() + ' as a file.</p>' +
+        (r[0] === 'AuditReport' ? '<select class="mt-2 report-campaign-select" data-type="' + r[0] + '"><option value="">Select a campaign…</option></select>' : '') +
+        '<div class="pill-select mt-3">' +
+          '<div class="pill active" data-format="csv">CSV</div>' +
+          '<div class="pill" data-format="xlsx">Excel</div>' +
+          '<div class="pill" data-format="pdf">PDF</div>' +
+        '</div>' +
+        '<button class="btn btn-primary btn-sm mt-3 report-generate-btn" data-type="' + r[0] + '"><i class="ti ti-download"></i> Generate</button>' +
+        '</div>';
+    }).join('') +
+    '</div>';
+
+  call('api_listAuditCampaigns').then(function (campaigns) {
+    document.querySelectorAll('.report-campaign-select').forEach(function (sel) {
+      campaigns.forEach(function (c) {
+        var opt = document.createElement('option'); opt.value = c.id; opt.textContent = c.name; sel.appendChild(opt);
+      });
+    });
+  });
+
+  document.querySelectorAll('.card').forEach(function (card) {
+    var format = 'csv';
+    card.querySelectorAll('.pill-select .pill').forEach(function (p) {
+      p.addEventListener('click', function () {
+        card.querySelectorAll('.pill-select .pill').forEach(function (x) { x.classList.remove('active'); });
+        p.classList.add('active'); format = p.dataset.format;
+      });
+    });
+    var genBtn = card.querySelector('.report-generate-btn');
+    if (!genBtn) return;
+    genBtn.addEventListener('click', function () {
+      var reportType = genBtn.dataset.type;
+      var filters = {};
+      if (reportType === 'AuditReport') {
+        var sel = card.querySelector('.report-campaign-select');
+        if (!sel.value) { toast('Select a campaign first.', 'error'); return; }
+        filters.campaignId = sel.value;
+      }
+      genBtn.disabled = true; genBtn.innerHTML = '<span class="spinner"></span> Generating…';
+      exportReport(reportType, format, filters).then(function (res) {
+        genBtn.disabled = false; genBtn.innerHTML = '<i class="ti ti-download"></i> Generate';
+        toast(res.rowCount + ' row(s) exported.', 'success');
+      }).catch(function () { genBtn.disabled = false; genBtn.innerHTML = '<i class="ti ti-download"></i> Generate'; });
+    });
+  });
+}
+
+/* JsSettings — system settings + user/role management (Admin only) */
+
+function renderSettings() {
+  var content = document.getElementById('content');
+  content.innerHTML = '<div id="settings-holder" style="max-width:640px" class="card card-pad"><span class="spinner"></span></div>';
+  call('api_getSettings').then(function (s) {
+    var holder = document.getElementById('settings-holder');
+    holder.innerHTML =
+      '<h3>Company & email</h3>' +
+      field_('company.name', 'Company name', s['company.name']) +
+      field_('email.from.name', 'Email sender name', s['email.from.name']) +
+      field_('email.sender.reply_to', 'Reply-to address', s['email.sender.reply_to']) +
+      '<div class="divider"></div><h3>Audit automation</h3>' +
+      field_('audit.reminder.days_before_due', 'Send reminder N days before due date', s['audit.reminder.days_before_due']) +
+      field_('audit.escalation.days_overdue', 'Escalate after N days overdue', s['audit.escalation.days_overdue']) +
+      field_('audit.escalation.email', 'Escalation email recipient', s['audit.escalation.email']) +
+      '<div class="divider"></div><h3>Daily digest</h3>' +
+      '<div class="field"><label>Enabled</label><select id="f-digest-enabled">' +
+      '<option value="true"' + (s['digest.enabled'] === 'true' ? ' selected' : '') + '>Yes</option>' +
+      '<option value="false"' + (s['digest.enabled'] !== 'true' ? ' selected' : '') + '>No</option></select></div>' +
+      field_('digest.recipients', 'Digest recipients (comma-separated)', s['digest.recipients']) +
+      '<div class="mt-3"><button class="btn btn-primary" id="settings-save-btn">Save settings</button></div>';
+
+    document.getElementById('settings-save-btn').addEventListener('click', function () {
+      var payload = {};
+      holder.querySelectorAll('[data-key]').forEach(function (input) { payload[input.dataset.key] = input.value.trim(); });
+      payload['digest.enabled'] = document.getElementById('f-digest-enabled').value;
+      call('api_updateSettings', payload).then(function () { toast('Settings saved.', 'success'); });
+    });
+  });
+}
+
+function field_(key, label, value) {
+  return '<div class="field"><label>' + escapeHtml(label) + '</label><input data-key="' + key + '" value="' + escapeHtml(value || '') + '" /></div>';
+}
+
+function renderUsers() {
+  var content = document.getElementById('content');
+  content.innerHTML =
+    '<div class="flex justify-between items-center mb-3">' +
+      '<div class="text-muted text-sm">Manage who can access the system and what they can see.</div>' +
+      '<button class="btn btn-primary btn-sm" id="user-add-btn"><i class="ti ti-plus"></i> Add user</button>' +
+    '</div>' +
+    '<div class="table-wrap"><div id="users-holder" style="padding:40px;text-align:center"><span class="spinner"></span></div></div>';
+
+  document.getElementById('user-add-btn').addEventListener('click', function () { openUserForm_(); });
+  loadUsers_();
+}
+
+function loadUsers_() {
+  call('api_listUsers').then(function (users) {
+    var holder = document.getElementById('users-holder');
+    if (!users.length) { holder.innerHTML = emptyState('ti-shield-lock', 'No users provisioned yet.'); return; }
+    holder.innerHTML = '<table class="data"><thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Vertical</th><th>CCMS</th><th>Active</th><th></th></tr></thead><tbody>' +
+      users.map(function (u) {
+        return '<tr><td>' + escapeHtml(u.email) + '</td><td>' + escapeHtml(u.name) + '</td>' +
+          '<td><span class="badge badge-returned"><span class="badge-dot"></span>' + escapeHtml(u.role) + '</span></td>' +
+          '<td>' + escapeHtml(u.vertical || '—') + '</td><td class="mono">' + escapeHtml(u.ccms || '—') + '</td>' +
+          '<td>' + (u.active ? '<span class="badge badge-active"><span class="badge-dot"></span>Active</span>' : '<span class="badge badge-disabled"><span class="badge-dot"></span>Inactive</span>') + '</td>' +
+          '<td style="text-align:right"><button class="btn btn-sm user-edit-btn" data-email="' + escapeHtml(u.email) + '">Edit</button> ' +
+          '<button class="btn btn-sm btn-danger user-del-btn" data-email="' + escapeHtml(u.email) + '">Remove</button></td></tr>';
+      }).join('') + '</tbody></table>';
+
+    holder.querySelectorAll('.user-edit-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var u = users.find(function (x) { return x.email === btn.dataset.email; });
+        openUserForm_(u);
+      });
+    });
+    holder.querySelectorAll('.user-del-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        confirmDialog('Remove user', 'Remove access for ' + btn.dataset.email + '?', 'Remove', function () {
+          call('api_removeUser', btn.dataset.email).then(function () { toast('User removed.', 'success'); loadUsers_(); });
+        }, true);
+      });
+    });
+  });
+}
+
+function openUserForm_(existing) {
+  var isEdit = !!existing;
+  openModal(
+    '<div class="modal-header"><h3>' + (isEdit ? 'Edit user' : 'Add user') + '</h3></div>' +
+    '<div class="modal-body">' +
+      '<div class="field"><label>Email</label><input id="f-user-email" value="' + (existing ? escapeHtml(existing.email) : '') + '" ' + (isEdit ? 'disabled' : '') + ' /></div>' +
+      '<div class="field"><label>Name</label><input id="f-user-name" value="' + (existing ? escapeHtml(existing.name) : '') + '" /></div>' +
+      '<div class="field"><label>Role</label><select id="f-user-role">' +
+        ['Admin', 'LOB Manager', 'Read Only'].map(function (r) { return '<option value="' + r + '"' + (existing && existing.role === r ? ' selected' : '') + '>' + r + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="field"><label>Vertical (for LOB Manager only)</label><input id="f-user-vertical" value="' + (existing ? escapeHtml(existing.vertical || '') : '') + '" /></div>' +
+      '<div class="field"><label>CCMS (optional — used to resolve audit manager emails)</label><input id="f-user-ccms" value="' + (existing ? escapeHtml(existing.ccms || '') : '') + '" /></div>' +
+      '<div class="field"><label>Active</label><select id="f-user-active">' +
+        '<option value="true"' + (!existing || existing.active ? ' selected' : '') + '>Yes</option>' +
+        '<option value="false"' + (existing && !existing.active ? ' selected' : '') + '>No</option>' +
+      '</select></div>' +
+    '</div>' +
+    '<div class="modal-footer"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="f-user-save">Save</button></div>'
+  );
+  document.getElementById('f-user-save').addEventListener('click', function () {
+    var payload = {
+      email: document.getElementById('f-user-email').value.trim(),
+      name: document.getElementById('f-user-name').value.trim(),
+      role: document.getElementById('f-user-role').value,
+      vertical: document.getElementById('f-user-vertical').value.trim(),
+      ccms: document.getElementById('f-user-ccms').value.trim(),
+      active: document.getElementById('f-user-active').value === 'true'
+    };
+    call('api_upsertUser', payload).then(function () { toast('User saved.', 'success'); closeModal(); loadUsers_(); });
+  });
+}
+
+/* JsActivity — full activity/audit-trail log */
+
+function renderActivity() {
+  var content = document.getElementById('content');
+  content.innerHTML =
+    '<div class="table-wrap">' +
+      '<div class="table-toolbar"><input id="activity-search" style="width:220px" placeholder="Filter by record ID (serial)…" /></div>' +
+      '<div id="activity-holder" style="padding:40px;text-align:center"><span class="spinner"></span></div>' +
+    '</div>';
+  document.getElementById('activity-search').addEventListener('input', debounce(loadActivity_, 300));
+  loadActivity_();
+}
+
+function loadActivity_() {
+  var recordId = document.getElementById('activity-search').value.trim();
+  call('api_getActivityLog', recordId ? { recordId: recordId } : {}).then(function (rows) {
+    var holder = document.getElementById('activity-holder');
+    if (!rows.length) { holder.innerHTML = emptyState('ti-history', 'No activity recorded yet.'); return; }
+    holder.innerHTML = '<table class="data"><thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Record</th><th>Previous</th><th>New</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        return '<tr><td class="text-sm">' + escapeHtml(r.timestamp) + '</td><td>' + escapeHtml(r.user) + '</td>' +
+          '<td>' + escapeHtml(r.action) + '</td><td class="mono text-sm">' + escapeHtml(r.recordType) + ' · ' + escapeHtml(r.recordId) + '</td>' +
+          '<td class="text-sm text-muted">' + escapeHtml(r.previousValue) + '</td><td class="text-sm">' + escapeHtml(r.newValue) + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  });
+}
+
+
+/* JsBoot — runs once on page load: resolve session, gate access, boot the router. */
+
+function boot() {
+  initTheme();
+  call('api_getSession').then(function (session) {
+    APP.session = session;
+
+    if (!session.role) {
+      document.getElementById('loading-overlay').innerHTML =
+        '<div class="card card-pad" style="max-width:420px;text-align:center">' +
+        '<i class="ti ti-lock" style="font-size:32px;color:var(--warning)"></i>' +
+        '<h2 class="mt-3">Access not provisioned</h2>' +
+        '<p class="text-sm">Your account (' + escapeHtml(session.email || 'unknown') + ') is signed in but has no role yet. ' +
+        'Ask an Admin to add this email under Users &amp; Roles.</p>' +
+        '<button class="btn mt-3" onclick="signOut()">Sign out</button>' +
+        '</div>';
+      return;
+    }
+
+    document.getElementById('loading-overlay').style.display = 'none';
+    document.getElementById('app-shell').style.display = 'flex';
+
+    document.getElementById('company-name-label').textContent = session.companyName || 'Company';
+    document.getElementById('user-name').textContent = session.name;
+    document.getElementById('user-role').textContent = session.role + (session.vertical ? ' · ' + session.vertical : '');
+    document.getElementById('user-avatar').textContent = (session.name || '?').split(' ').map(function (p) { return p[0]; }).slice(0, 2).join('').toUpperCase();
+
+    if (session.role === 'Admin') {
+      document.getElementById('admin-nav-section').style.display = '';
+      document.getElementById('admin-nav-settings').style.display = '';
+      document.getElementById('admin-nav-users').style.display = '';
+    }
+
+    call('api_getPendingRecovery').then(function (rows) {
+      var badge = document.getElementById('nav-pending-badge');
+      if (rows.length) { badge.style.display = 'inline-flex'; badge.textContent = rows.length; }
+    });
+
+    var globalSearch = document.getElementById('global-search');
+    globalSearch.addEventListener('input', debounce(function () {
+      if (globalSearch.value.trim().length < 2) return;
+      navigate('keys');
+      setTimeout(function () {
+        var searchInput = document.getElementById('key-search');
+        if (searchInput) { searchInput.value = globalSearch.value; searchInput.dispatchEvent(new Event('input')); }
+      }, 50);
+    }, 400));
+    // Tapping a physical YubiKey while focused in the global search bar
+    // resolves it straight to that key's detail view instead of running
+    // a text search on the (meaningless) typed OTP string.
+    attachOtpScan(globalSearch, function (prefix) {
+      call('api_resolveOtp', prefix).then(function (key) {
+        navigate('keys');
+        setTimeout(function () { openKeyDetail_(key.serial); }, 50);
+      });
+    });
+
+    var urlParams = new URLSearchParams(window.location.search);
+    var initialView = urlParams.get('view') || 'dashboard';
+    var initialParams = {};
+    urlParams.forEach(function (v, k) { initialParams[k] = v; });
+
+    navigate(initialView, initialParams);
+  });
+}
+
+
+/* JsReports — exports are built in the browser from the same data the app shows. */
+
+var REPORT_STATUS = {
+  AssignedKeys: 'Assigned', AvailableKeys: 'Available', MissingKeys: 'Missing',
+  DamagedKeys: 'Damaged', InStockKeys: 'In Stock'
+};
+
+function loadScript_(url) {
+  return new Promise(function (resolve, reject) {
+    var s = document.createElement('script');
+    s.src = url; s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+function downloadBlob_(blob, fileName) {
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fileName;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+}
+
+function reportRows_(reportType, filters) {
+  if (reportType === 'AuditReport') {
+    return call('api_getAuditCampaignDetail', filters.campaignId).then(function (d) {
+      var header = ['CCMS', 'Vertical', 'Manager', 'Serial On File', 'Result', 'Comment', 'Submitted At'];
+      return [header].concat(d.items.map(function (i) {
+        return [i.ccms, i.vertical, i.manager, i.serialOnFile, i.result, i.comment, i.submittedAt];
+      }));
+    });
+  }
+  var f = REPORT_STATUS[reportType] ? { status: REPORT_STATUS[reportType] } : {};
+  return call('api_listKeys', f).then(function (keys) {
+    var header = ['Serial Number', 'Status', 'CCMS', 'Uber Email', 'Manager CCMS', 'Vertical'];
+    return [header].concat(keys.map(function (k) { return [k.serial, k.status, k.ccms, k.uberEmail, k.managerCcms, k.vertical]; }));
+  });
+}
+
+function exportReport(reportType, format, filters) {
+  return reportRows_(reportType, filters).then(function (rows) {
+    var stamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, '');
+    var name = reportType + '_' + stamp;
+
+    if (format === 'csv') {
+      var csv = rows.map(function (row) {
+        return row.map(function (cell) {
+          var s = String(cell === null || cell === undefined ? '' : cell);
+          return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        }).join(',');
+      }).join('\n');
+      downloadBlob_(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }), name + '.csv');
+    } else if (format === 'xlsx') {
+      return (window.XLSX ? Promise.resolve() : loadScript_('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js')).then(function () {
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Report');
+        XLSX.writeFile(wb, name + '.xlsx');
+        return { rowCount: rows.length - 1 };
+      });
+    } else {
+      // PDF: open a print view; the browser's "Save as PDF" does the rest.
+      var w = window.open('', '_blank');
+      if (!w) throw new Error('Allow pop-ups to export a PDF.');
+      w.document.write('<html><head><title>' + escapeHtml(name) + '</title><style>' +
+        'body{font-family:Arial,sans-serif;font-size:12px;padding:20px}table{border-collapse:collapse;width:100%}' +
+        'th,td{border:1px solid #ccc;padding:5px 8px;text-align:left}th{background:#0B0A12;color:#fff}</style></head><body>' +
+        '<h3>' + escapeHtml(reportType) + '</h3><table>' + rows.map(function (r, i) {
+          var tag = i === 0 ? 'th' : 'td';
+          return '<tr>' + r.map(function (c) { return '<' + tag + '>' + escapeHtml(String(c == null ? '' : c)) + '</' + tag + '>'; }).join('') + '</tr>';
+        }).join('') + '</table></body></html>');
+      w.document.close(); w.focus(); w.print();
+    }
+    return { rowCount: rows.length - 1 };
+  });
+}
+
+/* JsAuth — sign-in screen and session handling. */
+
+function showLogin_(message) {
+  document.getElementById('loading-overlay').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'none';
+  document.getElementById('login-view').style.display = 'flex';
+  document.getElementById('login-error').textContent = message || '';
+}
+
+function signOut() {
+  sb.auth.signOut().then(function () { window.location.reload(); });
+}
+
+function initAuth() {
+  var form = document.getElementById('login-form');
+  var submitBtn = document.getElementById('login-submit');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var errEl = document.getElementById('login-error');
+    errEl.textContent = '';
+    submitBtn.disabled = true;
+    sb.auth.signInWithPassword({
+      email: document.getElementById('login-email').value.trim(),
+      password: document.getElementById('login-password').value
+    }).then(function (res) {
+      submitBtn.disabled = false;
+      if (res.error) { errEl.textContent = 'Incorrect email or password.'; return; }
+      window.location.reload();
+    });
+  });
+
+  sb.auth.getSession().then(function (res) {
+    if (res.data && res.data.session) boot(); else showLogin_();
+  });
+  document.getElementById('logout-btn').addEventListener('click', signOut);
+}
+
+initAuth();
+
+  </script>
 </body>
 </html>
